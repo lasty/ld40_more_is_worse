@@ -38,6 +38,7 @@ private:
   col4 green;
 
   Text font1;
+  Text font2;
 
 public:
   Renderer();

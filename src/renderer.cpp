@@ -20,6 +20,7 @@ Renderer::Renderer()
 , grey{0.5f, 0.5f, 0.5f, 1.0f}
 , green{0.2f, 1.0f, 0.2f, 1.0f}
 , font1("../data/fonts/mono_0.png", "../data/fonts/mono.fnt")
+, font2("../data/fonts/small_0.png", "../data/fonts/small.fnt")
 {
   Setup();
 
@@ -143,11 +144,20 @@ void Renderer::RenderGame(const GameState &state)
   text_data.DrawQuad({0.0f, 0.0f}, {0.0f, 0.0f}, {256.0f, 256.0f}, {1.0f, 1.0f});
   text_data.DrawQuad({256.0f, 256.0f}, {0.0f, 0.0f}, {406.0f, 256.0f}, {1.0f, 1.0f});
 
+  font1.RenderString(text_data, "Hello, World!", {100.0f, 500.0f});
   text_data.UpdateVertexes();
 
+  glActiveTexture(GL_TEXTURE0);
+  glBindTexture(GL_TEXTURE_2D, font1.tex.texture_id);
+  DrawVertexData(GL_TRIANGLES, text_data, 0);
+
+
+  text_data.Clear();
+  font2.RenderString(text_data, "Smaller Text and stuff, IIiillLLWWMM[]()!", {100.0f, 600.0f});
+  text_data.UpdateVertexes();
 
   glActiveTexture(GL_TEXTURE1);
-  glBindTexture(GL_TEXTURE_2D, font1.tex.texture_id);
+  glBindTexture(GL_TEXTURE_2D, font2.tex.texture_id);
   DrawVertexData(GL_TRIANGLES, text_data, 1);
 }
 

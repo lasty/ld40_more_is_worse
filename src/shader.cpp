@@ -173,12 +173,12 @@ Textured::Textured()
   uniforms.rotation = glGetUniformLocation(program_id, "rotation");
   uniforms.colour = glGetUniformLocation(program_id, "colour");
   uniforms.zoom = glGetUniformLocation(program_id, "zoom");
-  uniforms.texture = glGetUniformLocation(program_id, "texture");
+  uniforms.texture = glGetUniformLocation(program_id, "tex_id");
 
   for (auto &u :
-    {uniforms.screen_resolution, uniforms.offset, uniforms.rotation, uniforms.colour, uniforms.zoom})
+    {uniforms.screen_resolution, uniforms.offset, uniforms.rotation, uniforms.colour, uniforms.zoom, uniforms.texture})
   {
-    //if (u == -1) throw std::runtime_error("uniform is not valid");
+    if (u == -1) throw std::runtime_error("uniform is not valid");
   }
 
   //Set some sane defaults
