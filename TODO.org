@@ -1,0 +1,30 @@
+
+# Todo List
+* Hello world
+* Renderer with textures
+* Text
+* Basic level
+* Binding keys to Player movement
+
+
+# Refactor
+
+# Bugs
+
+# Theme
+"The more you have, the worse it is"
+
+# Main game idea
+
+Roguelite kinda game, but every pickup you get you must bind a new key to.
+So the more inventory you have, the more thinking you have to do.
+
+Items to get started:
+
+Sword
+Gun
+Reuseable Health kits  (Large and Small)
+Grenade
+
+Monsters to get started:
+Rat

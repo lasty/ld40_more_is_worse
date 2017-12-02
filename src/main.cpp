@@ -1,0 +1,164 @@
+
+#include <ctime>
+#include <iostream>
+#include <sstream>
+#include <stdexcept>
+
+
+constexpr int SWAP_INTERVAL{1};
+
+constexpr int GL_MAJOR{3};
+constexpr int GL_MINOR{3};
+
+
+#include <SDL.h>
+#undef main
+
+
+#include "gl.hpp"
+
+#include "game.hpp"
+#include "maths.hpp"
+#include "renderer.hpp"
+#include "sound.hpp"
+#include "to_string.hpp"
+
+
+void ProcessEvents(Game *game, Renderer *renderer)
+{
+  SDL_Event event;
+  while (SDL_PollEvent(&event))
+  {
+    switch (event.type)
+    {
+      case SDL_QUIT:
+        game->gamestate.running = false;
+        break;
+    }
+  }
+}
+
+
+void main_game()
+{
+  std::cout << "Hello, world" << std::endl;
+  std::cout.precision(2);
+  std::cout << std::fixed;
+
+  SDL_Init(SDL_INIT_AUDIO | SDL_INIT_VIDEO);
+
+  SDL_version linked;
+  SDL_version compiled;
+
+  SDL_VERSION(&compiled);
+  SDL_GetVersion(&linked);
+
+  std::cout << "SDL Version: "
+            << "(compiled with " << (int)compiled.major << "." << (int)compiled.minor << "." << (int)compiled.patch << ")"
+            << "  (linked with " << (int)linked.major << "." << (int)linked.minor << "." << (int)linked.patch << ")"
+            << std::endl;
+
+
+  SDL_GL_SetAttribute(SDL_GL_CONTEXT_MAJOR_VERSION, GL_MAJOR);
+  SDL_GL_SetAttribute(SDL_GL_CONTEXT_MINOR_VERSION, GL_MINOR);
+  SDL_GL_SetAttribute(SDL_GL_CONTEXT_FLAGS, SDL_GL_CONTEXT_DEBUG_FLAG);
+
+  std::cout << "Requestiong OpenGL Context version " << GL_MAJOR << "." << GL_MINOR
+            << std::endl;
+
+  int width = 640;
+  int height = 480;
+  unsigned int window_flags = SDL_WINDOW_OPENGL;
+  SDL_Window *window = SDL_CreateWindow("ld40", 50, 50, width, height, window_flags);
+
+  if (not window)
+  {
+    throw std::runtime_error("failed to create window");
+  }
+
+  auto glcontext = SDL_GL_CreateContext(window);
+
+  //load opengl extension library here
+  if (glewInit() != GLEW_OK)
+  {
+    throw std::runtime_error("failed to init GLEW");
+  }
+
+  std::cout << "GLEW Version: " << glewGetString(GLEW_VERSION) << std::endl;
+  std::cout << "GL Version String: " << glGetString(GL_VERSION) << std::endl;
+
+  int gl_version_maj = GL::GetInteger(GL_MAJOR_VERSION);
+  int gl_version_min = GL::GetInteger(GL_MINOR_VERSION);
+
+  std::cout << "GL Version: " << gl_version_maj << "." << gl_version_min << std::endl;
+
+  GL::Debuging(true);
+
+  SDL_GL_SetSwapInterval(SWAP_INTERVAL);
+
+  {
+    Game game;
+
+    Renderer renderer;
+
+#if !NDEBUG
+    //If in Debug mode, set extra state things here
+#endif
+
+    game.gamestate.running = true;
+
+    auto last_time = SDL_GetTicks();
+
+    // Main Loop
+    while (game.gamestate.running)
+    {
+
+      ProcessEvents(&game, &renderer);
+
+      auto this_time = SDL_GetTicks();
+      float delta_time = (this_time - last_time) / 1000.0f;
+      last_time = this_time;
+
+      game.Update(delta_time);
+
+      // Render
+      renderer.RenderAll(game);
+      SDL_GL_SwapWindow(window);
+
+    } // end main loop
+  }
+  //Clean up
+
+  SDL_GL_DeleteContext(glcontext);
+
+  SDL_DestroyWindow(window);
+
+  SDL_Quit();
+
+  std::cout << "Game exited normally" << std::endl;
+}
+
+
+//#define CATCH_EXCEPTIONS true
+
+int main([[maybe_unused]] int argc, [[maybe_unused]] char *argv[])
+{
+
+  std::cout << "CPP version: " << CPPVersion() << std::endl;
+
+
+#if CATCH_EXCEPTIONS
+  try
+  {
+    main_game();
+  }
+  catch (std::exception &e)
+  {
+    std::cout << "std::exception thrown -- " << e.what() << std::endl;
+  }
+#else
+  main_game();
+#endif
+
+  return EXIT_SUCCESS;
+}
