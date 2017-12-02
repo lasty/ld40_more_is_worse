@@ -10,7 +10,7 @@
 struct Item
 {
   bool alive = true;
-  
+
   vec2 position;
   float radius;
   col4 colour;
@@ -27,6 +27,7 @@ struct Player
   vec2 velocity{0.0f, 0.0f};
   float radius = 30.0f;
 
+
   std::map<int, Item> KeyBindInventory;
 };
 
@@ -37,6 +38,8 @@ struct GameState
   bool debug_enabled = true;
 
   float wallclock = 0.0f;
+
+  bool drop_mode = false;
 
 
   Player player;

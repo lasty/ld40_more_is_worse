@@ -173,7 +173,17 @@ void Renderer::RenderGame(const GameState &state)
 
   text_data.Clear();
 
-  font1.RenderString(text_data, "Hello, World!", {100.0f, 500.0f});
+
+  if (state.drop_mode)
+  {
+    font1.RenderString(text_data, "Drop Mode", {100.0f, 500.0f});
+  }
+  else
+  {
+    font1.RenderString(text_data, "Normal Mode", {100.0f, 500.0f});
+  }
+
+
   text_data.UpdateVertexes();
 
   glActiveTexture(GL_TEXTURE0);
@@ -182,7 +192,22 @@ void Renderer::RenderGame(const GameState &state)
 
 
   text_data.Clear();
-  font2.RenderString(text_data, "Smaller Text and stuff, IIiillLLWWMM[]()!", {100.0f, 600.0f});
+  if (state.drop_mode)
+  {
+    font2.RenderString(text_data, "Press inventory key to drop items", {100.0f, 530.0f});
+  }
+  else
+  {
+    if (state.closest_item)
+    {
+      font2.RenderString(text_data, "Press a new key to pick up this item", {100.0f, 530.0f});
+    }
+    else
+    {
+      font2.RenderString(text_data, "Move to item to pick up, or press item's key to activate", {100.0f, 530.0f});
+    }
+  }
+
   text_data.UpdateVertexes();
 
   glActiveTexture(GL_TEXTURE1);

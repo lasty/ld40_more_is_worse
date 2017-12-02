@@ -63,34 +63,67 @@ void Game::ProcessKeyInput(int key, bool down)
 
   if (key == SDLK_ESCAPE and down) gamestate.running = false;
 
-  //if down, and not a reserved key
-  if (down and key != SDLK_w and key != SDLK_s and key != SDLK_a and key != SDLK_d and key != SDLK_ESCAPE)
+  if (key == SDLK_BACKSPACE and down)
   {
-    std::cout << "Input key: '" << SDL_GetKeyName(key) << "'" << std::endl;
+    gamestate.drop_mode = not gamestate.drop_mode;
+    std::cout << (gamestate.drop_mode ? "DROP MODE" : "Pickup Mode") << std::endl;
+  }
+
+  //if down, and not a reserved key
+  if (down and key != SDLK_w and key != SDLK_s and key != SDLK_a and key != SDLK_d and key != SDLK_ESCAPE and key != SDLK_BACKSPACE)
+  {
+    std::cout << "Input key: '" << SDL_GetKeyName(key) << "'  "
+              << (gamestate.drop_mode ? "DROP MODE" : "Pickup Mode") << std::endl;
 
     auto it = gamestate.player.KeyBindInventory.find(key);
-    if (it == gamestate.player.KeyBindInventory.end())
+
+    if (not gamestate.drop_mode)
     {
-      if (gamestate.closest_item != nullptr)
+      if (it == gamestate.player.KeyBindInventory.end())
       {
-        //add to inv
-        Item i = *gamestate.closest_item;
+        if (gamestate.closest_item != nullptr)
+        {
+          //add to inv
+          Item i = *gamestate.closest_item;
 
-        std::cout << "Picked up item '" << i.name << "'  - Bound to key  " << SDL_GetKeyName(key) << std::endl;
+          std::cout << "Picked up item '" << i.name << "'  - Bound to key  " << SDL_GetKeyName(key) << std::endl;
 
-        gamestate.player.KeyBindInventory.insert({key, i});
-        gamestate.closest_item->alive = false;
+          gamestate.player.KeyBindInventory.insert({key, i});
+          gamestate.closest_item->alive = false;
+        }
+        else
+        {
+          std::cout << "Nothing in inventory slot " << SDL_GetKeyName(key) << std::endl;
+        }
       }
       else
       {
-        std::cout << "Nothing in inventory slot " << SDL_GetKeyName(key) << std::endl;
+        Item& item = it->second;
+
+        ActivateItem(item);
       }
     }
-    else
+    else //Drop mode
     {
-      Item& item = it->second;
+      if (it == gamestate.player.KeyBindInventory.end())
+      {
+        std::cout << "Noting in that inventory slot to drop  " << SDL_GetKeyName(key) << std::endl;
+        gamestate.drop_mode = false;
+      }
+      else
+      {
+        Item i = it->second;
 
-      ActivateItem(item);
+        std::cout << "Dropping item " << i.name << std::endl;
+
+        i.position = gamestate.player.position + vec2{RandomFloat(-20, 20), RandomFloat(-20, 20)};
+
+        gamestate.world_items.push_back(i);
+        gamestate.closest_item = nullptr;
+
+        gamestate.player.KeyBindInventory.erase(it);
+        gamestate.drop_mode = false;
+      }
     }
   }
 }
