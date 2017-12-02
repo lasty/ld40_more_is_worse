@@ -70,19 +70,19 @@ private:
   int vao_id = 0;
   GLenum usage{};
 
-  const int floats_per_vertex = 2 + 4;
+  const int floats_per_vertex = 2 + 4 + 2;
   const int stride = floats_per_vertex * sizeof(float);
 
-
+  int program_id = -1;
 public:
-  VertexDataTextured(GLenum usage);
+  VertexDataTextured(GLenum usage, int program_id);
   ~VertexDataTextured();
 
   void Clear();
 
-  shape_def AddShape(std::vector<float> const &vertexes);
+  void AddVertex(const vec2 &position, const vec2 &uv, const col4 &colour);
 
-  void AddVertex(const vec2 &position, const col4 &colour);
+  void DrawQuad(vec2 pos1, vec2 uv1, vec2 pos2, vec2 uv2);
 
   void UpdateVertexes();
 
@@ -93,6 +93,30 @@ public:
 
   void AttachAttribute(int attrib_id, int size, int offset, GLenum type);
   void DetachAttribute(int attrib_id);
+};
+
+
+class Texture
+{
+public:
+  unsigned texture_id = 0;
+  int texture_unit = -1;
+
+  int width = 0;
+  int height = 0;
+
+public:
+  Texture(std::string filename);
+  ~Texture();
+};
+
+
+class Text
+{
+public:
+  Texture tex;
+
+  Text(std::string texture_filename, std::string font_filename);
 };
 
 
@@ -107,9 +131,13 @@ private:
   VertexDataBasic lines_data;
   VertexDataTextured particle_data;
 
+  VertexDataTextured text_data;
+
   col4 white;
   col4 grey;
   col4 green;
+
+  Text font1;
 
 public:
   Renderer();
@@ -123,6 +151,7 @@ public:
   void Resize(int width, int height);
 
   void DrawVertexData(GLenum draw_type, const VertexDataBasic &vertex_data);
+  void DrawVertexData(GLenum draw_type, const VertexDataTextured &vertex_data, int unit);
 
   void Setup();
 

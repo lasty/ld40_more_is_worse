@@ -178,7 +178,7 @@ Textured::Textured()
   for (auto &u :
     {uniforms.screen_resolution, uniforms.offset, uniforms.rotation, uniforms.colour, uniforms.zoom})
   {
-    if (u == -1) throw std::runtime_error("uniform is not valid");
+    //if (u == -1) throw std::runtime_error("uniform is not valid");
   }
 
   //Set some sane defaults
@@ -285,6 +285,7 @@ void main(void)
   vec2 screen_pos = v_zoomed + offset;
 
   gl_Position = vec4(ScreenToClip(screen_pos), 0.0, 1.0);
+  uv_coords = uv;
   vertex_colour = col;
 }
 )";
@@ -302,9 +303,11 @@ out vec4 out_colour;
 
 void main(void)
 {
-  vec4 tex_colour = texture2D(tex_id, uv_coords);
+  vec4 tex_colour = texture(tex_id, uv_coords);
+
   out_colour = tex_colour * colour * vertex_colour;
-  //out_colour.a += 0.5;
+  //out_colour = vertex_colour;
+
 }
 
 )";

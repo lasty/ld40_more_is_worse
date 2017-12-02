@@ -38,7 +38,7 @@ target_compile_options(ld40 PUBLIC "-std=gnu++1z")
 
 target_link_libraries(ld40 PUBLIC
   ${MINGW32}
-  SDL2::SDL2 SDL2::mixer SDL2::main
+  SDL2::SDL2 SDL2::mixer SDL2::main SDL2::image
   GLEW::GLEW
   OpenGL::GL)
 
