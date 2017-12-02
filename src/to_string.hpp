@@ -4,8 +4,8 @@
 #include <string>
 
 
-
 //Game stuff
+std::string GetMouseButtonName(int button);
 
 
 //Maths stuff

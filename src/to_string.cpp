@@ -3,6 +3,8 @@
 
 #include <sstream>
 
+#include <SDL_mouse.h>
+
 #include "game.hpp"
 #include "gl.hpp"
 #include "maths_types.hpp"
@@ -105,4 +107,26 @@ std::string CPPVersion()
     return "C++11";
   else
     return "Time to upgrade your compiler";
+}
+
+
+
+
+std::string GetMouseButtonName(int button)
+{
+  switch (button)
+  {
+    case SDL_BUTTON_LEFT:
+      return "Left";
+    case SDL_BUTTON_RIGHT:
+      return "Right";
+    case SDL_BUTTON_MIDDLE:
+      return "Middle";
+    case SDL_BUTTON_X1:
+      return "X1";
+    case SDL_BUTTON_X2:
+      return "X2";
+    default:
+      return "Unknown button";
+  }
 }

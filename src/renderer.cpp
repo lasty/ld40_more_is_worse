@@ -280,7 +280,10 @@ void Renderer::RenderGame(const GameState &state)
 
   lines_data.DrawCircle({400, 200}, r1, white);
   lines_data.DrawCircle({400, 200}, 150, grey);
-  lines_data.DrawCircle({400, 200}, 200, green);
+  //lines_data.DrawCircle({400, 200}, 200, green);
+
+  lines_data.DrawCircle(state.player.position, 50, green);
+
 
   lines_data.UpdateVertexes();
   DrawVertexData(GL_LINES, lines_data);

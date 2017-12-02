@@ -19,4 +19,9 @@ public:
   Game();
 
   void Update(float dt);
+
+  void ProcessKeyInput(int key, bool down);
+  void ProcessMouseInput(int button, bool down);
+
+
 };

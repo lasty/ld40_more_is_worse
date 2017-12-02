@@ -1,10 +1,10 @@
 
 # Todo List
-* Hello world
-* Renderer with textures
-* Text
+* DONE Hello world
+* TODO Renderer with textures
+* TODO Text
 * Basic level
-* Binding keys to Player movement
+* DONE Binding keys to Player movement
 
 
 # Refactor

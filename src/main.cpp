@@ -34,6 +34,21 @@ void ProcessEvents(Game *game, Renderer *renderer)
       case SDL_QUIT:
         game->gamestate.running = false;
         break;
+
+      case SDL_KEYDOWN:
+        game->ProcessKeyInput(event.key.keysym.sym, true);
+        break;
+      case SDL_KEYUP:
+        game->ProcessKeyInput(event.key.keysym.sym, false);
+        break;
+
+      case SDL_MOUSEBUTTONDOWN:
+        game->ProcessMouseInput(event.button.button, true);
+        break;
+
+      case SDL_MOUSEBUTTONUP:
+        game->ProcessMouseInput(event.button.button, false);
+        break;
     }
   }
 }
