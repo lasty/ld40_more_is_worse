@@ -111,11 +111,11 @@ void Text::RenderGlyph(VertexDataTextured &vertex_data, glyph g, vec2 pos)
   vec2 uv1{g.x / res, g.y / res};
   vec2 uv2{(g.x + g.width) / res, (g.y + g.height) / res};
 
-  vertex_data.DrawQuad(pos1, uv1, pos2, uv2);
+  vertex_data.DrawQuad(pos1, uv1, pos2, uv2, current_colour);
 }
 
 
-void Text::RenderString(VertexDataTextured &vertex_data, const std::string str, vec2 pos)
+vec2 Text::RenderString(VertexDataTextured &vertex_data, const std::string str, vec2 pos)
 {
   for (char ch : str)
   {
@@ -132,4 +132,19 @@ void Text::RenderString(VertexDataTextured &vertex_data, const std::string str, 
 
     pos.x += g.xadvance;
   }
+
+  return pos;
+}
+
+
+vec2 Text::RenderString(VertexDataTextured &vertex_data, const std::string str, vec2 pos, col4 colour)
+{
+  SetColour(colour);
+  return RenderString(vertex_data, str, pos);
+}
+
+
+void Text::SetColour(col4 new_colour)
+{
+  current_colour = new_colour;
 }

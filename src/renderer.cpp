@@ -1,7 +1,10 @@
 
 #include "renderer.hpp"
 
+#include <sstream>
 #include <vector>
+
+#include <SDL.h>
 
 #include "game.hpp"
 #include "gl.hpp"
@@ -17,7 +20,7 @@ Renderer::Renderer()
 , particle_data(GL_DYNAMIC_DRAW)
 , text_data(GL_DYNAMIC_DRAW)
 , white{1.0f, 1.0f, 1.0f, 1.0f}
-, grey{0.5f, 0.5f, 0.5f, 1.0f}
+, grey{0.6f, 0.6f, 0.7f, 1.0f}
 , green{0.2f, 1.0f, 0.2f, 1.0f}
 , font1("../data/fonts/mono_0.png", "../data/fonts/mono.fnt")
 , font2("../data/fonts/small_0.png", "../data/fonts/small.fnt")
@@ -138,6 +141,35 @@ void Renderer::RenderItem(const Item &item, bool colliding)
 }
 
 
+void Renderer::RenderInventory(std::map<int, Item> inventory)
+{
+  vec2 pos{10.0f, 30.0f};
+
+  font2.RenderString(text_data, "Inventory: ", pos, white);
+  pos.y += 20.0f;
+
+  for (auto & [ key, item ] : inventory)
+  {
+    std::stringstream ss_item;
+    ss_item << SDL_GetKeyName(key) << ": " << item.name;
+
+    vec2 pos2 = font2.RenderString(text_data, ss_item.str(), pos, grey);
+
+    if (item.cooldown > 0.0f)
+    {
+      std::stringstream ss_cooldown;
+      ss_cooldown.precision(1);
+      ss_cooldown << std::fixed;
+      ss_cooldown << " [" << item.cooldown << "s]";
+
+      font2.RenderString(text_data, ss_cooldown.str(), pos2, green);
+    }
+
+    pos.y += 20.0f;
+  }
+}
+
+
 void Renderer::RenderGame(const GameState &state)
 {
   oscilate = sin(state.wallclock * 5.0f);
@@ -150,6 +182,8 @@ void Renderer::RenderGame(const GameState &state)
 
   lines_data.Clear();
   text_data.Clear();
+  font1.SetColour(white);
+  font2.SetColour(white);
 
 
   for (auto &item : state.world_items)
@@ -173,14 +207,16 @@ void Renderer::RenderGame(const GameState &state)
 
   text_data.Clear();
 
+  vec2 mode_position{10.0f, 700.0f};
+  vec2 mode_line2{10.0f, 730.0f};
 
   if (state.drop_mode)
   {
-    font1.RenderString(text_data, "Drop Mode", {100.0f, 500.0f});
+    font1.RenderString(text_data, "Drop Mode", mode_position, white);
   }
   else
   {
-    font1.RenderString(text_data, "Normal Mode", {100.0f, 500.0f});
+    font1.RenderString(text_data, "Normal Mode", mode_position, white);
   }
 
 
@@ -194,19 +230,21 @@ void Renderer::RenderGame(const GameState &state)
   text_data.Clear();
   if (state.drop_mode)
   {
-    font2.RenderString(text_data, "Press inventory key to drop items", {100.0f, 530.0f});
+    font2.RenderString(text_data, "Press inventory key to drop items", mode_line2, grey);
   }
   else
   {
     if (state.closest_item)
     {
-      font2.RenderString(text_data, "Press a new key to pick up this item", {100.0f, 530.0f});
+      font2.RenderString(text_data, "Press a new key to pick up this item", mode_line2, grey);
     }
     else
     {
-      font2.RenderString(text_data, "Move to item to pick up, or press item's key to activate", {100.0f, 530.0f});
+      font2.RenderString(text_data, "Move to item to pick up, or press item's key to activate", mode_line2, grey);
     }
   }
+
+  RenderInventory(state.player.KeyBindInventory);
 
   text_data.UpdateVertexes();
 

@@ -71,6 +71,7 @@ public:
   void AddVertex(const vec2 &position, const vec2 &uv, const col4 &colour);
 
   void DrawQuad(vec2 pos1, vec2 uv1, vec2 pos2, vec2 uv2);
+  void DrawQuad(vec2 pos1, vec2 uv1, vec2 pos2, vec2 uv2, col4 colour);
 
   void UpdateVertexes();
 

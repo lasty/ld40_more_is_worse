@@ -235,8 +235,12 @@ void VertexDataTextured::AddVertex(const vec2 &position, const vec2 &uv, const c
 
 void VertexDataTextured::DrawQuad(vec2 pos1, vec2 uv1, vec2 pos2, vec2 uv2)
 {
-  col4 white{1.0f, 1.0f, 1.0f, 1.0f};
+  constexpr col4 white{1.0f, 1.0f, 1.0f, 1.0f};
+  return DrawQuad(pos1, uv1, pos2, uv2, white);
+}
 
+void VertexDataTextured::DrawQuad(vec2 pos1, vec2 uv1, vec2 pos2, vec2 uv2, col4 colour)
+{
   vec2 tl{pos1.x, pos1.y};
   vec2 tr{pos2.x, pos1.y};
   vec2 bl{pos1.x, pos2.y};
@@ -247,13 +251,13 @@ void VertexDataTextured::DrawQuad(vec2 pos1, vec2 uv1, vec2 pos2, vec2 uv2)
   vec2 bl_uv{uv1.x, uv2.y};
   vec2 br_uv{uv2.x, uv2.y};
 
-  AddVertex(tl, tl_uv, white);
-  AddVertex(bl, bl_uv, white);
-  AddVertex(tr, tr_uv, white);
+  AddVertex(tl, tl_uv, colour);
+  AddVertex(bl, bl_uv, colour);
+  AddVertex(tr, tr_uv, colour);
 
-  AddVertex(tr, tr_uv, white);
-  AddVertex(bl, bl_uv, white);
-  AddVertex(br, br_uv, white);
+  AddVertex(tr, tr_uv, colour);
+  AddVertex(bl, bl_uv, colour);
+  AddVertex(br, br_uv, colour);
 }
 
 

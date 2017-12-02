@@ -6,9 +6,19 @@
 #include <string>
 #include <vector>
 
+enum class Active_Type
+{
+  none,
+  passive,
+  limited_use,
+  toggle,
+  hold_down,
+};
+
 enum class Item_Type
 {
   none,
+  command,
   health,
   gun
 };
@@ -17,6 +27,7 @@ struct Item
 {
   bool alive = true;
 
+  Active_Type activate = Active_Type::none;
   Item_Type type = Item_Type::none;
 
   vec2 position{0.0f, 0.0f};

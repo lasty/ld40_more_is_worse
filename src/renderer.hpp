@@ -61,6 +61,8 @@ public:
   void RenderPlayer(const Player &player);
   void RenderItem(const Item &item, bool colliding);
 
+  void RenderInventory(std::map<int, Item> inventory);
+
   void RenderGame(const GameState &state);
 
   void RenderAll(const Game &game);

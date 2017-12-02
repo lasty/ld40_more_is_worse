@@ -5,6 +5,7 @@
 #include <vector>
 
 #include "game_state.hpp"
+#include "items.hpp"
 #include "maths_types.hpp"
 #include "sound.hpp"
 
@@ -14,6 +15,7 @@ class Game
 public:
   GameState gamestate;
   Sound sound;
+  ItemFactory item_factory;
 
 
   std::mt19937 mt_rand;
@@ -24,6 +26,8 @@ public:
 
   void NewGame();
 
+  void NewPlayer();
+
   void UpdatePlayer(float dt);
   void UpdateItem(Item& item, float dt);
   void Update(float dt);
@@ -31,7 +35,13 @@ public:
   void ProcessKeyInput(int key, bool down);
   void ProcessMouseInput(int button, bool down);
 
-  void ActivateItem(Item& item);
+  void PickupItem(int key, Item& item);
+  void DropItem(int key, bool down);
+
+  void ActivateCommand(Item& item, bool down);
+
+  void ActivateItem(Item& item, bool down);
+
   void RemoveDeadItems();
 
   int RandomInt(int min, int max);

@@ -20,3 +20,10 @@ void insert_at_end(CONT &container, CONT &items)
   container.insert(container.end(), items.begin(), items.end());
 }
 
+
+template<typename CONT, typename KEY>
+bool key_exists(CONT &container, const KEY &key)
+{
+  auto it = container.find(key);
+  return (it != container.end());
+}

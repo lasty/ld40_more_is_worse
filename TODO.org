@@ -31,7 +31,7 @@
 
 # Refactor
 * Text/font objects should have their own vertex data?
-
+* Move getkeyname to to_string
 
 # Bugs
 * Player moves faster when up/left held together

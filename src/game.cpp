@@ -2,6 +2,7 @@
 #include "game.hpp"
 
 #include <algorithm>
+#include <cassert>
 #include <ctime>
 #include <sstream>
 
@@ -71,77 +72,88 @@ void Game::Update(float dt)
 
 void Game::ProcessKeyInput(int key, bool down)
 {
-  float player_speed = down ? 400 : 0;
 
-  if (key == SDLK_w) gamestate.player.velocity.y = -player_speed;
-  if (key == SDLK_s) gamestate.player.velocity.y = player_speed;
-  if (key == SDLK_a) gamestate.player.velocity.x = -player_speed;
-  if (key == SDLK_d) gamestate.player.velocity.x = player_speed;
+  std::cout << "Input key: '" << SDL_GetKeyName(key) << "'  "
+            //<< (gamestate.drop_mode ? "DROP MODE" : "Pickup Mode")
+            << (down ? "(Down)" : "(Up)")
+            << std::endl;
 
-  if (key == SDLK_ESCAPE and down) gamestate.running = false;
-
-  if (key == SDLK_BACKSPACE and down)
+  if (not gamestate.drop_mode)
   {
-    gamestate.drop_mode = not gamestate.drop_mode;
-    std::cout << (gamestate.drop_mode ? "DROP MODE" : "Pickup Mode") << std::endl;
-  }
-
-  //if down, and not a reserved key
-  if (down and key != SDLK_w and key != SDLK_s and key != SDLK_a and key != SDLK_d and key != SDLK_ESCAPE and key != SDLK_BACKSPACE)
-  {
-    std::cout << "Input key: '" << SDL_GetKeyName(key) << "'  "
-              << (gamestate.drop_mode ? "DROP MODE" : "Pickup Mode") << std::endl;
-
     auto it = gamestate.player.KeyBindInventory.find(key);
-
-    if (not gamestate.drop_mode)
+    if (it == gamestate.player.KeyBindInventory.end())
     {
-      if (it == gamestate.player.KeyBindInventory.end())
+      if (gamestate.closest_item != nullptr)
       {
-        if (gamestate.closest_item != nullptr)
+        if (down)
         {
-          //add to inv
-          Item i = *gamestate.closest_item;
-
-          std::cout << "Picked up item '" << i.name << "'  - Bound to key  " << SDL_GetKeyName(key) << std::endl;
-
-          gamestate.player.KeyBindInventory.insert({key, i});
-          gamestate.closest_item->alive = false;
-        }
-        else
-        {
-          std::cout << "Nothing in inventory slot " << SDL_GetKeyName(key) << std::endl;
+          PickupItem(key, *gamestate.closest_item);
+          gamestate.closest_item = nullptr;
         }
       }
       else
       {
-        Item& item = it->second;
-
-        ActivateItem(item);
+        std::cout << "Nothing in inventory slot " << SDL_GetKeyName(key) << std::endl;
       }
     }
-    else //Drop mode
+    else
     {
-      if (it == gamestate.player.KeyBindInventory.end())
+      Item& item = it->second;
+
+      ActivateItem(item, down);
+    }
+  }
+  else //Drop mode
+  {
+    DropItem(key, down);
+  }
+}
+
+
+void Game::PickupItem(int key, Item& item)
+{
+  std::cout << "Picked up item '" << item.name << "'  - Bound to key  " << SDL_GetKeyName(key) << std::endl;
+  assert(not key_exists(gamestate.player.KeyBindInventory, key));
+
+  gamestate.player.KeyBindInventory.insert({key, item});
+  item.alive = false;
+}
+
+
+void Game::DropItem(int key, bool down)
+{
+  auto it = gamestate.player.KeyBindInventory.find(key);
+  if (it == gamestate.player.KeyBindInventory.end())
+  {
+    std::cout << "Noting in that inventory slot to drop  " << SDL_GetKeyName(key) << std::endl;
+    gamestate.drop_mode = false;
+  }
+  else
+  {
+    Item i = it->second;
+
+    if (i.type == Item_Type::command)
+    {
+      if (i.name == "DROP" and not down)
       {
-        std::cout << "Noting in that inventory slot to drop  " << SDL_GetKeyName(key) << std::endl;
         gamestate.drop_mode = false;
       }
       else
       {
-        Item i = it->second;
-
-        std::cout << "Dropping item " << i.name << std::endl;
-
-        i.position = gamestate.player.position + vec2{RandomFloat(-20, 20), RandomFloat(-20, 20)};
-
-        gamestate.world_items.push_back(i);
-        gamestate.closest_item = nullptr;
-
-        gamestate.player.KeyBindInventory.erase(it);
-        gamestate.drop_mode = false;
+        std::cout << "Cannot drop or rebind commands";
       }
+      return;
     }
+
+    std::cout << "Dropping item " << i.name << std::endl;
+
+    i.position = gamestate.player.position + vec2{RandomFloat(-20, 20), RandomFloat(-20, 20)};
+
+    gamestate.world_items.push_back(i);
+    gamestate.closest_item = nullptr;
+
+    gamestate.player.KeyBindInventory.erase(it);
+    gamestate.drop_mode = false;
   }
 }
 
@@ -151,9 +163,29 @@ void Game::ProcessMouseInput(int button, bool down)
   if (down) std::cout << "Input mouse button: '" << GetMouseButtonName(button) << "'" << std::endl;
 }
 
-
-void Game::ActivateItem(Item& item)
+void Game::ActivateCommand(Item& item, bool down)
 {
+  float player_speed = down ? 400 : 0;
+
+  if (item.name == "UP") gamestate.player.velocity.y = -player_speed;
+  if (item.name == "DOWN") gamestate.player.velocity.y = player_speed;
+  if (item.name == "LEFT") gamestate.player.velocity.x = -player_speed;
+  if (item.name == "RIGHT") gamestate.player.velocity.x = player_speed;
+
+  if (item.name == "MENU" and down) gamestate.running = false;
+
+  if (item.name == "DROP")
+  {
+    gamestate.drop_mode = down;
+    std::cout << (gamestate.drop_mode ? "DROP MODE" : "Pickup Mode") << std::endl;
+  }
+}
+
+
+void Game::ActivateItem(Item& item, bool down)
+{
+  if (item.type == Item_Type::command) return ActivateCommand(item, down);
+
   if (item.cooldown > 0.0f)
   {
     std::cout << "'" << item.name << "' is recharging (" << item.cooldown << " seconds)" << std::endl;
@@ -217,12 +249,37 @@ Item Game::GenerateRandomItem(vec2 position)
 }
 
 
+void Game::NewPlayer()
+{
+  gamestate.player = Player{};
+
+  //Setup initial keybinds for WASD and backspace
+  auto up = item_factory.GetCommand("UP");
+  auto down = item_factory.GetCommand("DOWN");
+  auto left = item_factory.GetCommand("LEFT");
+  auto right = item_factory.GetCommand("RIGHT");
+
+  PickupItem(SDLK_w, up);
+  PickupItem(SDLK_s, down);
+  PickupItem(SDLK_a, left);
+  PickupItem(SDLK_d, right);
+
+  auto menu = item_factory.GetCommand("MENU");
+  auto drop = item_factory.GetCommand("DROP");
+  PickupItem(SDLK_ESCAPE, menu);
+  PickupItem(SDLK_BACKSPACE, drop);
+}
+
+
 void Game::NewGame()
 {
   gamestate.wallclock = 0.0f;
   gamestate.running = true;
   gamestate.debug_enabled = false;
   gamestate.world_items.clear();
+
+  NewPlayer();
+
 
   item_name_number = 0;
 
@@ -232,9 +289,6 @@ void Game::NewGame()
 
     gamestate.world_items.push_back(item);
   }
-
-  Player new_player;
-  gamestate.player = new_player;
 }
 
 
