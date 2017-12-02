@@ -10,6 +10,9 @@ constexpr int SWAP_INTERVAL{1};
 constexpr int GL_MAJOR{3};
 constexpr int GL_MINOR{3};
 
+constexpr int WIDTH = 1280;
+constexpr int HEIGHT = 768;
+
 
 #include <SDL.h>
 #undef main
@@ -81,10 +84,9 @@ void main_game()
   std::cout << "Requestiong OpenGL Context version " << GL_MAJOR << "." << GL_MINOR
             << std::endl;
 
-  int width = 640;
-  int height = 480;
+
   unsigned int window_flags = SDL_WINDOW_OPENGL;
-  SDL_Window *window = SDL_CreateWindow("ld40", 50, 50, width, height, window_flags);
+  SDL_Window *window = SDL_CreateWindow("ld40", 50, 50, WIDTH, HEIGHT, window_flags);
 
   if (not window)
   {
@@ -115,6 +117,8 @@ void main_game()
     Game game;
 
     Renderer renderer;
+    renderer.Resize(WIDTH, HEIGHT);
+
 
 #if !NDEBUG
     //If in Debug mode, set extra state things here

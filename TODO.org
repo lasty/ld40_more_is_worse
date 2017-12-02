@@ -1,13 +1,15 @@
 
 # Todo List
 * DONE Hello world
-* TODO Renderer with textures
+* DONE Renderer with textures
 * TODO Text
 * Basic level
 * DONE Binding keys to Player movement
 
 
 # Refactor
+* Move vertex data into own file
+
 
 # Bugs
 

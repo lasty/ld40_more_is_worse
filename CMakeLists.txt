@@ -29,7 +29,10 @@ add_executable(ld40 WIN32
   src/renderer.cpp
   src/shader.cpp
   src/sound.cpp
-  src/to_string.cpp)
+  src/text.cpp
+  src/texture.cpp
+  src/to_string.cpp
+  src/vertex.cpp)
 
 
 target_compile_options(ld40 PUBLIC "-std=gnu++1z")
