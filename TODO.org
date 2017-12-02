@@ -1,12 +1,32 @@
 
 # Todo List
 * Some item classes
-* collision detection
-* physics
-* pickup item (bind key to pickup)
-* use item (press the items bound key)
-* drop item (use backspace to drop)
+    * Health Kit
+    * Gun
+
+* Add inventory support for mouse buttons
+
+* Monster class
+    * Health Bars
+    * Melee Attacks player when touching
+    * Shoots bullets towards player
+
+* Projectile class
+    * Bullets 
+
+* physics for items (Drop towards mouse)
+
 * Basic random level
+    * Add random monsters
+    * Better loot creation
+
+* Direction for player
+
+* Render arrow for player
+
+* Sounds
+
+* Camera follows player and mouse?
 
 
 # Refactor
@@ -14,6 +34,8 @@
 
 
 # Bugs
+* Player moves faster when up/left held together
+* Player stops moving when left/right still held
 
 
 # Theme
@@ -42,3 +64,4 @@ Throwable weapons (knives, spears)
 Boots of speed
 Trap (eg, slow trap)
 Shield
+Dodge Roll or Jump

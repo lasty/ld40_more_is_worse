@@ -6,18 +6,35 @@
 #include <string>
 #include <vector>
 
+enum class Item_Type
+{
+  none,
+  health,
+  gun
+};
 
 struct Item
 {
   bool alive = true;
 
-  vec2 position;
-  float radius;
-  col4 colour;
+  Item_Type type = Item_Type::none;
+
+  vec2 position{0.0f, 0.0f};
+  float radius = 5.0f;
+  col4 colour{0.5f, 0.5f, 0.5f, 1.0f};
 
   bool colliding = false;
 
-  std::string name;
+  float cooldown = 0.0f;
+
+  std::string name = "Uninitialized Item!";
+};
+
+
+struct Health
+{
+  int current;
+  int max;
 };
 
 
@@ -27,8 +44,33 @@ struct Player
   vec2 velocity{0.0f, 0.0f};
   float radius = 30.0f;
 
+  Health health{100, 100};
 
   std::map<int, Item> KeyBindInventory;
+};
+
+
+enum class Monster_Type
+{
+  none,
+  dummy,
+  melee,
+  shooter
+};
+
+
+struct Monster
+{
+  bool alive = true;
+
+  Monster_Type type = Monster_Type::none;
+
+  vec2 position{0.0f, 0.0f};
+  vec2 velocity{0.0f, 0.0f};
+
+  Health health{10, 10};
+
+  std::string name = "Uninitialized monster!";
 };
 
 

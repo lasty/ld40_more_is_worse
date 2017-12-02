@@ -3,6 +3,7 @@
 
 #include <algorithm>
 #include <ctime>
+#include <sstream>
 
 #include "maths.hpp"
 #include "sound.hpp"
@@ -15,13 +16,27 @@
 Game::Game()
 : mt_rand(time(0))
 {
-  std::cout << "mt_rand() " << mt_rand() << std::endl;
+}
 
-  for (int i = 0; i < 10; i++)
-    std::cout << "random(0, 9) " << RandomInt(0, 9) << std::endl;
 
-  for (int i = 0; i < 10; i++)
-    std::cout << "randomfloat(-1, 1) " << RandomFloat(-1.0f, 1.0f) << std::endl;
+void Game::UpdatePlayer(float dt)
+{
+  gamestate.player.position += (gamestate.player.velocity * dt);
+
+  for (auto& it : gamestate.player.KeyBindInventory)
+  {
+    UpdateItem(it.second, dt);
+  }
+}
+
+
+void Game::UpdateItem(Item& item, float dt)
+{
+  if (item.cooldown > 0.0f)
+  {
+    item.cooldown -= dt;
+    if (item.cooldown < 0.0f) item.cooldown = 0.0f;
+  }
 }
 
 
@@ -29,11 +44,13 @@ void Game::Update(float dt)
 {
   gamestate.wallclock += dt;
 
-  gamestate.player.position += (gamestate.player.velocity * dt);
+  UpdatePlayer(dt);
 
   gamestate.closest_item = nullptr;
   for (auto& item : gamestate.world_items)
   {
+    UpdateItem(item, dt);
+
     if (Collides(gamestate.player, item))
     {
       if (gamestate.closest_item == nullptr)
@@ -137,7 +154,15 @@ void Game::ProcessMouseInput(int button, bool down)
 
 void Game::ActivateItem(Item& item)
 {
-  std::cout << "Activate item  '" << item.name << "'  !!!  " << std::endl;
+  if (item.cooldown > 0.0f)
+  {
+    std::cout << "'" << item.name << "' is recharging (" << item.cooldown << " seconds)" << std::endl;
+  }
+  else
+  {
+    std::cout << "Activate item  '" << item.name << "'  !!!  " << std::endl;
+    item.cooldown = 5.0f;
+  }
 }
 
 
@@ -182,10 +207,15 @@ Item Game::GenerateRandomItem(vec2 position)
   i.position = position;
   i.radius = 50.0f;
   i.colour = GenerateRandomColour();
-  i.name = "Item1";
+
+  std::stringstream ss;
+  ss << "Item_" << item_name_number;
+  i.name = ss.str();
+  item_name_number++;
 
   return i;
 }
+
 
 void Game::NewGame()
 {
@@ -193,6 +223,8 @@ void Game::NewGame()
   gamestate.running = true;
   gamestate.debug_enabled = false;
   gamestate.world_items.clear();
+
+  item_name_number = 0;
 
   for (int i = 0; i < 10; i++)
   {

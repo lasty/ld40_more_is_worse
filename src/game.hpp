@@ -17,18 +17,21 @@ public:
 
 
   std::mt19937 mt_rand;
+  int item_name_number = 0;
 
 public:
   Game();
 
   void NewGame();
 
+  void UpdatePlayer(float dt);
+  void UpdateItem(Item& item, float dt);
   void Update(float dt);
 
   void ProcessKeyInput(int key, bool down);
   void ProcessMouseInput(int button, bool down);
 
-  void ActivateItem(Item &item);
+  void ActivateItem(Item& item);
   void RemoveDeadItems();
 
   int RandomInt(int min, int max);
