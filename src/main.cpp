@@ -27,7 +27,7 @@ constexpr int HEIGHT = 768;
 #include "to_string.hpp"
 
 
-void ProcessEvents(Game *game, Renderer *renderer)
+void ProcessEvents(Game *game, [[maybe_unused]] Renderer *renderer)
 {
   SDL_Event event;
   while (SDL_PollEvent(&event))
@@ -115,6 +115,7 @@ void main_game()
 
   {
     Game game;
+    game.NewGame();
 
     Renderer renderer;
     renderer.Resize(WIDTH, HEIGHT);
@@ -123,8 +124,6 @@ void main_game()
 #if !NDEBUG
     //If in Debug mode, set extra state things here
 #endif
-
-    game.gamestate.running = true;
 
     auto last_time = SDL_GetTicks();
 
@@ -138,6 +137,7 @@ void main_game()
       float delta_time = (this_time - last_time) / 1000.0f;
       last_time = this_time;
 
+      game.RemoveDeadItems();
       game.Update(delta_time);
 
       // Render

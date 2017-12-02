@@ -33,6 +33,8 @@ private:
 
   VertexDataTextured text_data;
 
+  float oscilate = 0.0f;
+
   col4 white;
   col4 grey;
   col4 green;
@@ -55,6 +57,9 @@ public:
   void DrawVertexData(GLenum draw_type, const VertexDataTextured &vertex_data, int unit);
 
   void Setup();
+
+  void RenderPlayer(const Player &player);
+  void RenderItem(const Item &item, bool colliding);
 
   void RenderGame(const GameState &state);
 

@@ -116,33 +116,62 @@ void Renderer::DrawVertexData(GLenum draw_type, const VertexDataTextured &vertex
 }
 
 
+void Renderer::RenderPlayer(const Player &player)
+{
+  lines_data.DrawCircle(player.position, player.radius, green);
+
+  font2.RenderString(text_data, "Player", player.position + vec2{-20.0f, player.radius});
+}
+
+
+void Renderer::RenderItem(const Item &item, bool colliding)
+{
+  lines_data.DrawCircle(item.position, item.radius, item.colour);
+
+  if (colliding)
+  {
+    float r1 = item.radius + (oscilate * 5);
+    lines_data.DrawCircle(item.position, r1, white);
+  }
+
+  font2.RenderString(text_data, item.name, item.position + vec2{-20.0f, item.radius});
+}
+
+
 void Renderer::RenderGame(const GameState &state)
 {
+  oscilate = sin(state.wallclock * 5.0f);
+
   // const bool draw_normals = state.debug_enabled;
   // const bool draw_velocity = state.debug_enabled;
   // const bool draw_bounds = state.debug_enabled;
 
   EnableBlend();
-  // DisableBlend();
 
   lines_data.Clear();
+  text_data.Clear();
 
-  float r1 = 100 + (sin(state.wallclock) * 10);
 
-  lines_data.DrawCircle({400, 200}, r1, white);
-  lines_data.DrawCircle({400, 200}, 150, grey);
-  //lines_data.DrawCircle({400, 200}, 200, green);
+  for (auto &item : state.world_items)
+  {
+    bool colliding = state.closest_item and state.closest_item == &item;
+    RenderItem(item, colliding);
+  }
 
-  lines_data.DrawCircle(state.player.position, 50, green);
+
+  RenderPlayer(state.player);
 
 
   lines_data.UpdateVertexes();
   DrawVertexData(GL_LINES, lines_data);
 
+  text_data.UpdateVertexes();
+  glActiveTexture(GL_TEXTURE1);
+  glBindTexture(GL_TEXTURE_2D, font2.tex.texture_id);
+  DrawVertexData(GL_TRIANGLES, text_data, 1);
+
 
   text_data.Clear();
-  text_data.DrawQuad({0.0f, 0.0f}, {0.0f, 0.0f}, {256.0f, 256.0f}, {1.0f, 1.0f});
-  text_data.DrawQuad({256.0f, 256.0f}, {0.0f, 0.0f}, {406.0f, 256.0f}, {1.0f, 1.0f});
 
   font1.RenderString(text_data, "Hello, World!", {100.0f, 500.0f});
   text_data.UpdateVertexes();
