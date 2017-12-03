@@ -9,17 +9,20 @@
 
 class ItemFactory
 {
-    private:
-    std::vector<Active_Type> active_type_list;
-    std::vector<Item_Type> item_type_list;
-    
-    public:
+private:
+  std::vector<Active_Type> active_type_list;
+  std::vector<Item_Type> item_type_list;
+  std::vector<Monster_Type> monster_type_list;
 
-    Random random;
+public:
+  Random random;
 
-    ItemFactory();
+  ItemFactory();
 
-    Item GenerateRandomItem();
+  Item GenerateRandomItem();
 
-    Item GetCommand(std::string what);
+  Monster GenerateRandomMonster();
+
+
+  Item GetCommand(std::string what);
 };

@@ -36,6 +36,7 @@ private:
   col4 white;
   col4 grey;
   col4 green;
+  col4 red;
 
   Text font1;
   Text font2;
@@ -57,8 +58,12 @@ public:
   void Setup();
 
   void RenderPlayer(const Player &player);
+
   void RenderItem(const Item &item, bool colliding, bool moused_over);
   void RenderItemInfoCard(const Item &item, const vec2 &mouse_pos);
+
+  void RenderMonster(const Monster &monster, bool moused_over);
+  void RenderMonsterInfoCard(const Monster &monster, const vec2 &mouse_pos);
 
   void RenderProjectile(const Projectile &projectile);
 

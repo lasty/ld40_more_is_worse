@@ -12,6 +12,8 @@ ItemFactory::ItemFactory()
 
   item_type_list = {Item_Type::health,
     Item_Type::gun};
+
+  monster_type_list = {Monster_Type::dummy, Monster_Type::melee, Monster_Type::shooter};
 }
 
 
@@ -62,4 +64,43 @@ Item ItemFactory::GenerateRandomItem()
 
 
   return i;
+}
+
+
+Monster ItemFactory::GenerateRandomMonster()
+{
+  Monster m;
+  m.type = random.PickList(monster_type_list);
+
+  switch (m.type)
+  {
+    case Monster_Type::dummy:
+      m.health = {1000, 1000};
+      m.name = "Training Dummy";
+      m.radius = 50;
+      break;
+
+    case Monster_Type::melee:
+    {
+      int h = random.Int(1, 10);
+      m.health = {h, h};
+      m.name = "Melee monster";
+      m.radius = 40;
+    }
+    break;
+
+    case Monster_Type::shooter:
+    {
+      int h = random.Int(1, 5);
+      m.health = {h, h};
+      m.name = "Shooter monster";
+      m.radius = 30;
+    }
+    break;
+
+    case Monster_Type::none:
+      break;
+  }
+
+  return m;
 }

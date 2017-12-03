@@ -99,8 +99,9 @@ struct Monster
 
   vec2 position{0.0f, 0.0f};
   vec2 velocity{0.0f, 0.0f};
+  float radius = 5.0f;
 
-  Health health{10, 10};
+  Health health{0, 0};
 
   std::string name = "Uninitialized monster!";
 };
@@ -117,12 +118,13 @@ struct GameState
 
   vec2 mouse_position{0.0f, 0.0f};
 
-  Player player;
+  Player player{};
 
   std::vector<Item> world_items;
-
   std::vector<Projectile> world_projectiles;
+  std::vector<Monster> world_monsters;
 
   Item* closest_item = nullptr;
   Item* mouseover_item = nullptr;
+  Monster* mouseover_monster = nullptr;
 };

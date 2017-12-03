@@ -44,6 +44,11 @@ void Game::UpdateProjectile(Projectile& projectile, float dt)
   projectile.position += (projectile.velocity * dt);
 }
 
+void Game::UpdateMonster(Monster& monster, float dt)
+{
+  if (monster.health.current <= 0) monster.alive = false;
+}
+
 
 Item* GetClosest(vec2 position, Item* i1, Item& i2)
 {
@@ -91,6 +96,21 @@ void Game::Update(float dt)
   for (auto& projectile : gamestate.world_projectiles)
   {
     UpdateProjectile(projectile, dt);
+
+    for (auto& monster : gamestate.world_monsters)
+    {
+      if (Collides(projectile, monster))
+      {
+        monster.health.current -= projectile.damage;
+        projectile.ttl = 0.0f;
+        std::cout << "projectile hit " << monster.name << " for " << projectile.damage << " damage." << std::endl;
+      }
+    }
+  }
+
+  for (auto& monster : gamestate.world_monsters)
+  {
+    UpdateMonster(monster, dt);
   }
 }
 
@@ -249,10 +269,13 @@ void Game::ActivateItem(Item& item, bool down)
 void Game::RemoveDeadItems()
 {
   gamestate.closest_item = gamestate.mouseover_item = nullptr;
+  gamestate.mouseover_monster = nullptr;
 
   remove_if_inplace(gamestate.world_items, [](auto& i) { return not i.alive; });
 
   remove_if_inplace(gamestate.world_projectiles, [](auto& p) { return p.ttl <= 0.0f; });
+
+  remove_if_inplace(gamestate.world_monsters, [](auto& m) { return not m.alive; });
 }
 
 
@@ -277,6 +300,16 @@ Item Game::GenerateRandomItem(vec2 position)
   i.position = position;
 
   return i;
+}
+
+
+Monster Game::GenerateRandomMonster(vec2 position)
+{
+  Monster m = item_factory.GenerateRandomMonster();
+
+  m.position = position;
+
+  return m;
 }
 
 
@@ -308,15 +341,29 @@ void Game::NewGame()
   gamestate.running = true;
   gamestate.debug_enabled = false;
   gamestate.world_items.clear();
+  gamestate.world_projectiles.clear();
+  gamestate.world_monsters.clear();
+
+  gamestate.closest_item = gamestate.mouseover_item = nullptr;
+  gamestate.mouseover_monster = nullptr;
 
   NewPlayer();
 
+  constexpr int num_items = 15;
+  constexpr int num_monsters = 10;
 
-  for (int i = 0; i < 10; i++)
+  for (int i = 0; i < num_items; i++)
   {
     Item item = GenerateRandomItem(random.Position());
 
     gamestate.world_items.push_back(item);
+  }
+
+  for (int i = 0; i < num_monsters; i++)
+  {
+    Monster monster = GenerateRandomMonster(random.Position());
+
+    gamestate.world_monsters.push_back(monster);
   }
 }
 
@@ -338,4 +385,14 @@ bool Game::Collides(const Player& player, const Item& item)
 bool Game::Collides(const Item& item1, const Item& item2)
 {
   return Collides(item1.position, item1.radius, item2.position, item2.radius);
+}
+
+bool Game::Collides(const Player& player, const Monster& monster)
+{
+  return Collides(player.position, player.radius, monster.position, monster.radius);
+}
+
+bool Game::Collides(const Projectile& projectile, const Monster& monster)
+{
+  return Collides(projectile.position, projectile.radius, monster.position, monster.radius);
 }

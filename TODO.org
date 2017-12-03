@@ -28,6 +28,7 @@
 # Refactor
 * Text/font objects should have their own vertex data?
 * Sort inventory to seperate commands and inventory
+* put all the clear pointers into a function
 
 
 # Bugs

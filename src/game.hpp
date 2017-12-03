@@ -30,6 +30,8 @@ public:
   void UpdatePlayer(float dt);
   void UpdateItem(Item& item, float dt);
   void UpdateProjectile(Projectile& projectile, float dt);
+  void UpdateMonster(Monster& monster, float dt);
+
   void Update(float dt);
 
   void ProcessKeyInput(int key, bool down);
@@ -49,8 +51,11 @@ public:
 
 
   Item GenerateRandomItem(vec2 position);
+  Monster GenerateRandomMonster(vec2 position);
 
-  bool Collides(const vec2 &p1, float r1, const vec2 &p2, float r2);
+  bool Collides(const vec2& p1, float r1, const vec2& p2, float r2);
   bool Collides(const Player& player, const Item& item);
   bool Collides(const Item& item1, const Item& item2);
+  bool Collides(const Player& player, const Monster& monster);
+  bool Collides(const Projectile& projectile, const Monster& monster);
 };

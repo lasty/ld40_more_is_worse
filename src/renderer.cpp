@@ -22,6 +22,7 @@ Renderer::Renderer()
 , white{1.0f, 1.0f, 1.0f, 1.0f}
 , grey{0.6f, 0.6f, 0.7f, 1.0f}
 , green{0.2f, 1.0f, 0.2f, 1.0f}
+, red{0.9f, 0.1f, 0.2f, 1.0f}
 , font1("../data/fonts/mono_0.png", "../data/fonts/mono.fnt")
 , font2("../data/fonts/small_0.png", "../data/fonts/small.fnt")
 {
@@ -266,6 +267,27 @@ void Renderer::RenderItemInfoCard(const Item &item, const vec2 &mouse_pos)
   }
 }
 
+void Renderer::RenderMonster(const Monster &monster, bool moused_over)
+{
+  lines_data.DrawCircle(monster.position, monster.radius, red);
+
+  if (moused_over)
+  {
+    float r1 = monster.radius + (oscilate * 5);
+    lines_data.DrawCircle(monster.position, r1, white);
+  }
+  else
+  {
+    font2.RenderString(text_data, monster.name, monster.position + vec2{-20.0f, monster.radius}, grey);
+  }
+}
+
+
+void Renderer::RenderMonsterInfoCard(const Monster &monster, const vec2 &mouse_pos)
+{
+}
+
+
 void Renderer::RenderProjectile(const Projectile &projectile)
 {
   lines_data.DrawCircle(projectile.position, projectile.radius, white);
@@ -321,6 +343,18 @@ void Renderer::RenderGame(const GameState &state)
     if (moused_over)
     {
       RenderItemInfoCard(item, state.mouse_position);
+    }
+  }
+
+
+  for (auto &monster : state.world_monsters)
+  {
+    bool moused_over = state.mouseover_monster and state.mouseover_monster == &monster;
+
+    RenderMonster(monster, moused_over);
+    if (moused_over)
+    {
+      RenderMonsterInfoCard(monster, state.mouse_position);
     }
   }
 
