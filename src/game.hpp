@@ -8,6 +8,7 @@
 #include "items.hpp"
 #include "maths_types.hpp"
 #include "sound.hpp"
+#include "utils.hpp"
 
 
 class Game
@@ -17,9 +18,7 @@ public:
   Sound sound;
   ItemFactory item_factory;
 
-
-  std::mt19937 mt_rand;
-  int item_name_number = 0;
+  Random random;
 
 public:
   Game();
@@ -43,12 +42,6 @@ public:
   void ActivateItem(Item& item, bool down);
 
   void RemoveDeadItems();
-
-  int RandomInt(int min, int max);
-  float RandomFloat(float min, float max);
-
-  vec2 GenerateRandomPosition();
-  col4 GenerateRandomColour();
 
   Item GenerateRandomItem(vec2 position);
 

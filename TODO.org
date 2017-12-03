@@ -19,6 +19,7 @@
 * Basic random level
     * Add random monsters
     * Better loot creation
+    * Have circular walls, permanent ones in a ring around the edge
 
 * Direction for player
 
@@ -27,6 +28,8 @@
 * Sounds
 
 * Camera follows player and mouse?
+
+
 
 
 # Refactor
@@ -59,6 +62,7 @@ Rat
 
 
 Items later:
+Pickaxe (destroys walls)
 Ammo box
 Throwable weapons (knives, spears)
 Boots of speed

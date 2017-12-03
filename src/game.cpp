@@ -3,7 +3,6 @@
 
 #include <algorithm>
 #include <cassert>
-#include <ctime>
 #include <sstream>
 
 #include "maths.hpp"
@@ -15,7 +14,6 @@
 
 
 Game::Game()
-: mt_rand(time(0))
 {
 }
 
@@ -206,44 +204,11 @@ void Game::RemoveDeadItems()
 }
 
 
-int Game::RandomInt(int min, int max)
-{
-  std::uniform_int_distribution<int> distribution(min, max);
-  return distribution(mt_rand);
-}
-
-
-float Game::RandomFloat(float min, float max)
-{
-  std::uniform_real_distribution<float> distribution(min, max);
-  return distribution(mt_rand);
-}
-
-
-vec2 Game::GenerateRandomPosition()
-{
-  return {RandomFloat(0, 1000), RandomFloat(0, 1000)};
-}
-
-
-col4 Game::GenerateRandomColour()
-{
-  return {RandomFloat(0.0f, 1.0f), RandomFloat(0.0f, 1.0f),
-    RandomFloat(0.0f, 1.0f), 1.0f};
-}
-
-
 Item Game::GenerateRandomItem(vec2 position)
 {
-  Item i;
-  i.position = position;
-  i.radius = 50.0f;
-  i.colour = GenerateRandomColour();
+  Item i = item_factory.GenerateRandomItem();
 
-  std::stringstream ss;
-  ss << "Item_" << item_name_number;
-  i.name = ss.str();
-  item_name_number++;
+  i.position = position;
 
   return i;
 }
@@ -281,11 +246,9 @@ void Game::NewGame()
   NewPlayer();
 
 
-  item_name_number = 0;
-
-  for (int i = 0; i < 10; i++)
+  for (int i = 0; i < 100; i++)
   {
-    Item item = GenerateRandomItem(GenerateRandomPosition());
+    Item item = GenerateRandomItem(random.Position());
 
     gamestate.world_items.push_back(item);
   }

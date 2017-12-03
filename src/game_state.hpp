@@ -101,3 +101,4 @@ struct GameState
 
   Item* closest_item = nullptr;
 };
+
