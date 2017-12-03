@@ -57,7 +57,9 @@ public:
   void Setup();
 
   void RenderPlayer(const Player &player);
-  void RenderItem(const Item &item, bool colliding);
+  void RenderItem(const Item &item, bool colliding, bool moused_over);
+  void RenderItemInfoCard(const Item &item, const vec2 &mouse_pos);
+
   void RenderProjectile(const Projectile &projectile);
 
   void RenderInventory(std::map<int, Item> inventory);

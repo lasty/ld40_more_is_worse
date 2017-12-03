@@ -45,6 +45,25 @@ void Game::UpdateProjectile(Projectile& projectile, float dt)
 }
 
 
+Item* GetClosest(vec2 position, Item* i1, Item& i2)
+{
+  if (i1 == nullptr)
+  {
+    return &i2;
+  }
+  else
+  {
+    if (distance(position, i2.position) < distance(position, i1->position))
+    {
+      return &i2;
+    }
+    else
+    {
+      return i1;
+    }
+  }
+}
+
 void Game::Update(float dt)
 {
   gamestate.wallclock += dt;
@@ -52,23 +71,20 @@ void Game::Update(float dt)
   UpdatePlayer(dt);
 
   gamestate.closest_item = nullptr;
+  gamestate.mouseover_item = nullptr;
+
   for (auto& item : gamestate.world_items)
   {
     UpdateItem(item, dt);
 
     if (Collides(gamestate.player, item))
     {
-      if (gamestate.closest_item == nullptr)
-      {
-        gamestate.closest_item = &item;
-      }
-      else
-      {
-        if (distance(gamestate.player.position, item.position) < distance(gamestate.player.position, gamestate.closest_item->position))
-        {
-          gamestate.closest_item = &item;
-        }
-      }
+      gamestate.closest_item = GetClosest(gamestate.player.position, gamestate.closest_item, item);
+    }
+
+    if (Collides(gamestate.mouse_position, 20.0f, item.position, item.radius))
+    {
+      gamestate.mouseover_item = GetClosest(gamestate.mouse_position, gamestate.mouseover_item, item);
     }
   }
 
@@ -97,7 +113,7 @@ void Game::ProcessKeyInput(int key, bool down)
         if (down)
         {
           PickupItem(key, *gamestate.closest_item);
-          gamestate.closest_item = nullptr;
+          gamestate.closest_item = gamestate.mouseover_item = nullptr;
         }
       }
       else
@@ -115,6 +131,7 @@ void Game::ProcessKeyInput(int key, bool down)
   else //Drop mode
   {
     DropItem(key, down);
+    gamestate.closest_item = gamestate.mouseover_item = nullptr;
   }
 }
 
@@ -178,7 +195,7 @@ void Game::DropItem(int key, bool down)
     i.position = gamestate.player.position + vec2{RandomFloat(-20, 20), RandomFloat(-20, 20)};
 
     gamestate.world_items.push_back(i);
-    gamestate.closest_item = nullptr;
+    gamestate.closest_item = gamestate.mouseover_item = nullptr;
 
     gamestate.player.KeyBindInventory.erase(it);
     gamestate.drop_mode = false;
@@ -231,7 +248,7 @@ void Game::ActivateItem(Item& item, bool down)
 
 void Game::RemoveDeadItems()
 {
-  gamestate.closest_item = nullptr;
+  gamestate.closest_item = gamestate.mouseover_item = nullptr;
 
   remove_if_inplace(gamestate.world_items, [](auto& i) { return not i.alive; });
 
@@ -304,17 +321,21 @@ void Game::NewGame()
 }
 
 
+bool Game::Collides(const vec2& p1, float r1, const vec2& p2, float r2)
+{
+  float dist = distance(p1, p2);
+  float radii = r1 + r2;
+  return dist <= radii;
+}
+
+
 bool Game::Collides(const Player& player, const Item& item)
 {
-  float dist = distance(player.position, item.position);
-  float radii = player.radius + item.radius;
-  return dist <= radii;
+  return Collides(player.position, player.radius, item.position, item.radius);
 }
 
 
 bool Game::Collides(const Item& item1, const Item& item2)
 {
-  float dist = distance(item1.position, item2.position);
-  float radii = item1.radius + item2.radius;
-  return dist <= radii;
+  return Collides(item1.position, item1.radius, item2.position, item2.radius);
 }

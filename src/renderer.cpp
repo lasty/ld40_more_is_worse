@@ -132,7 +132,7 @@ void Renderer::RenderPlayer(const Player &player)
 }
 
 
-void Renderer::RenderItem(const Item &item, bool colliding)
+void Renderer::RenderItem(const Item &item, bool colliding, bool moused_over)
 {
   lines_data.DrawCircle(item.position, item.radius, item.colour);
 
@@ -142,9 +142,129 @@ void Renderer::RenderItem(const Item &item, bool colliding)
     lines_data.DrawCircle(item.position, r1, white);
   }
 
-  font2.RenderString(text_data, item.name, item.position + vec2{-20.0f, item.radius});
+  if (moused_over)
+  {
+    float r1 = item.radius + (oscilate * 5);
+    lines_data.DrawCircle(item.position, r1, white);
+  }
+  else
+  {
+    font2.RenderString(text_data, item.name, item.position + vec2{-20.0f, item.radius}, grey);
+  }
 }
 
+
+std::string GetCooldownText(const Item &item)
+{
+  if (item.activate == Active_Type::none or item.activate == Active_Type::passive) return "";
+
+  std::stringstream ss_cooldown;
+  ss_cooldown.precision(1);
+  ss_cooldown << std::fixed;
+  ss_cooldown << " [" << item.cooldown_max << "s cooldown]";
+  return ss_cooldown.str();
+}
+
+
+std::string GetActiveCooldownText(const Item &item)
+{
+  std::stringstream ss_cooldown;
+  ss_cooldown.precision(1);
+  ss_cooldown << std::fixed;
+  ss_cooldown << " [" << item.cooldown << "s]";
+  return ss_cooldown.str();
+}
+
+
+void Renderer::RenderItemInfoCard(const Item &item, const vec2 &mouse_pos)
+{
+  vec2 infocard_pos = mouse_pos + vec2{10.0f, 20.0f};
+
+  col4 red{1.0f, 0.2f, 0.2f, 1.0f};
+  col4 tan{0.8f, 0.6f, 0.2f, 1.0f};
+
+
+  font2.RenderString(text_data, item.name, infocard_pos, white);
+  infocard_pos.y += 20;
+
+  switch (item.type)
+  {
+    case Item_Type::health:
+    {
+      font2.RenderString(text_data, "Health item", infocard_pos, red);
+      infocard_pos.y += 20;
+      std::stringstream ss;
+      ss << item.healing_amount << " healing amount";
+      font2.RenderString(text_data, ss.str(), infocard_pos, grey);
+      infocard_pos.y += 20;
+    }
+    break;
+
+
+    case Item_Type::gun:
+    {
+      font2.RenderString(text_data, "Projectile Weapon", infocard_pos, tan);
+      infocard_pos.y += 20;
+      std::stringstream ss;
+      ss << item.projectile_damage << " damage";
+      font2.RenderString(text_data, ss.str(), infocard_pos, grey);
+      infocard_pos.y += 20;
+    }
+    break;
+
+    case Item_Type::command:
+      font2.RenderString(text_data, "[Command]", infocard_pos, grey);
+      infocard_pos.y += 20;
+      break;
+
+    case Item_Type::none:
+      font2.RenderString(text_data, "[None]", infocard_pos, grey);
+      infocard_pos.y += 20;
+      break;
+  }
+
+  vec2 pos2;
+
+  switch (item.activate)
+  {
+    case Active_Type::none:
+      font2.RenderString(text_data, "[None]", infocard_pos, grey);
+      infocard_pos.y += 20;
+      break;
+
+    case Active_Type::hold_down:
+      pos2 = font2.RenderString(text_data, "Hold to use ", infocard_pos, grey);
+      infocard_pos.y += 20;
+      break;
+
+    case Active_Type::limited_use:
+      pos2 = font2.RenderString(text_data, "Limited uses ", infocard_pos, grey);
+      infocard_pos.y += 20;
+      break;
+
+    case Active_Type::passive:
+      pos2 = font2.RenderString(text_data, "Passive", infocard_pos, grey);
+      infocard_pos.y += 20;
+      break;
+
+    case Active_Type::repeatable:
+      pos2 = font2.RenderString(text_data, "Repeatable", infocard_pos, grey);
+      infocard_pos.y += 20;
+      break;
+
+    case Active_Type::toggle:
+      pos2 = font2.RenderString(text_data, "Toggle on/off ", infocard_pos, grey);
+      infocard_pos.y += 20;
+      break;
+  }
+
+  std::string cooldown_text = GetCooldownText(item);
+
+  if (not cooldown_text.empty())
+  {
+    font2.RenderString(text_data, cooldown_text, pos2, green);
+  }
+}
 
 void Renderer::RenderProjectile(const Projectile &projectile)
 {
@@ -168,12 +288,7 @@ void Renderer::RenderInventory(std::map<int, Item> inventory)
 
     if (item.cooldown > 0.0f)
     {
-      std::stringstream ss_cooldown;
-      ss_cooldown.precision(1);
-      ss_cooldown << std::fixed;
-      ss_cooldown << " [" << item.cooldown << "s]";
-
-      font2.RenderString(text_data, ss_cooldown.str(), pos2, green);
+      font2.RenderString(text_data, GetActiveCooldownText(item), pos2, green);
     }
 
     pos.y += 20.0f;
@@ -200,7 +315,13 @@ void Renderer::RenderGame(const GameState &state)
   for (auto &item : state.world_items)
   {
     bool colliding = state.closest_item and state.closest_item == &item;
-    RenderItem(item, colliding);
+    bool moused_over = state.mouseover_item and state.mouseover_item == &item;
+
+    RenderItem(item, colliding, moused_over);
+    if (moused_over)
+    {
+      RenderItemInfoCard(item, state.mouse_position);
+    }
   }
 
 

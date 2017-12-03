@@ -5,7 +5,6 @@
 
 #include <SDL.h>
 
-#include "game.hpp"
 #include "gl.hpp"
 #include "maths_types.hpp"
 

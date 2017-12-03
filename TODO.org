@@ -1,20 +1,8 @@
 
 # Todo List
 
-* Some item classes
-    * DONE Health Kit
-    * DONE Gun
 
-* DONE Add inventory support for mouse buttons
-
-* DONE Direction for player
-
-* DONE Projectile class
-    * Bullets 
-
-* DONE Render arrow for player (not an arrow, but indicates direction)
-
-* Mouseover items for an info card
+* TODO Mouseover items for an info card
 
 * Monster class
     * Health Bars
@@ -32,10 +20,13 @@
 
 * Camera follows player and mouse?
 
+* Mouse over inventory to display info card
+
+* Mouse over enemies for info card?
+
 
 # Refactor
 * Text/font objects should have their own vertex data?
-* DONE Move getkeyname to to_string
 * Sort inventory to seperate commands and inventory
 
 

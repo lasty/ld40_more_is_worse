@@ -124,4 +124,5 @@ struct GameState
   std::vector<Projectile> world_projectiles;
 
   Item* closest_item = nullptr;
+  Item* mouseover_item = nullptr;
 };
