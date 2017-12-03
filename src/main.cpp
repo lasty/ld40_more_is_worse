@@ -52,6 +52,10 @@ void ProcessEvents(Game *game, [[maybe_unused]] Renderer *renderer)
       case SDL_MOUSEBUTTONUP:
         game->ProcessMouseInput(event.button.button, false);
         break;
+
+      case SDL_MOUSEMOTION:
+        game->ProcessMouseMotion(event.motion.x, event.motion.y);
+        break;
     }
   }
 }

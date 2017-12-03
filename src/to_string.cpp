@@ -3,7 +3,7 @@
 
 #include <sstream>
 
-#include <SDL_mouse.h>
+#include <SDL.h>
 
 #include "game.hpp"
 #include "gl.hpp"
@@ -110,23 +110,30 @@ std::string CPPVersion()
 }
 
 
-
-
-std::string GetMouseButtonName(int button)
+std::string GetInputName(int button_or_key)
 {
-  switch (button)
+  if (button_or_key <= SDL_BUTTON_X2)
   {
-    case SDL_BUTTON_LEFT:
-      return "Left";
-    case SDL_BUTTON_RIGHT:
-      return "Right";
-    case SDL_BUTTON_MIDDLE:
-      return "Middle";
-    case SDL_BUTTON_X1:
-      return "X1";
-    case SDL_BUTTON_X2:
-      return "X2";
-    default:
-      return "Unknown button";
+    switch (button_or_key)
+    {
+      case SDL_BUTTON_LEFT:
+        return "Left Mouse";
+      case SDL_BUTTON_MIDDLE:
+        return "Middle Mouse";
+      case SDL_BUTTON_RIGHT:
+        return "Right Mouse";
+      case SDL_BUTTON_X1:
+        return "Mouse X1";
+      case SDL_BUTTON_X2:
+        return "Mouse X2";
+      default:
+        return "Unknown button";
+    }
+  }
+  else
+  {
+    std::string keyname = SDL_GetKeyName(button_or_key);
+    if (keyname.empty()) return "Unknown key or button";
+    return keyname;
   }
 }

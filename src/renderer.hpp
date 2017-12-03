@@ -10,14 +10,12 @@
 #include "vertex.hpp"
 
 
-
 struct GLState
 {
   int program = 0;
   int vao = 0;
   bool blending = false;
 };
-
 
 
 class Renderer
@@ -60,6 +58,7 @@ public:
 
   void RenderPlayer(const Player &player);
   void RenderItem(const Item &item, bool colliding);
+  void RenderProjectile(const Projectile &projectile);
 
   void RenderInventory(std::map<int, Item> inventory);
 

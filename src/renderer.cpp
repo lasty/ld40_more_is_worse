@@ -4,7 +4,7 @@
 #include <sstream>
 #include <vector>
 
-#include <SDL.h>
+// #include <SDL.h>
 
 #include "game.hpp"
 #include "gl.hpp"
@@ -123,6 +123,11 @@ void Renderer::RenderPlayer(const Player &player)
 {
   lines_data.DrawCircle(player.position, player.radius, green);
 
+  vec2 direction = normalize(player.direction);
+  vec2 facing_circle = player.position + (direction * player.radius);
+  lines_data.DrawCircle(facing_circle, player.radius / 4.0f, green);
+
+
   font2.RenderString(text_data, "Player", player.position + vec2{-20.0f, player.radius});
 }
 
@@ -141,6 +146,12 @@ void Renderer::RenderItem(const Item &item, bool colliding)
 }
 
 
+void Renderer::RenderProjectile(const Projectile &projectile)
+{
+  lines_data.DrawCircle(projectile.position, projectile.radius, white);
+}
+
+
 void Renderer::RenderInventory(std::map<int, Item> inventory)
 {
   vec2 pos{10.0f, 30.0f};
@@ -151,7 +162,7 @@ void Renderer::RenderInventory(std::map<int, Item> inventory)
   for (auto & [ key, item ] : inventory)
   {
     std::stringstream ss_item;
-    ss_item << SDL_GetKeyName(key) << ": " << item.name;
+    ss_item << GetInputName(key) << ": " << item.name;
 
     vec2 pos2 = font2.RenderString(text_data, ss_item.str(), pos, grey);
 
@@ -190,6 +201,12 @@ void Renderer::RenderGame(const GameState &state)
   {
     bool colliding = state.closest_item and state.closest_item == &item;
     RenderItem(item, colliding);
+  }
+
+
+  for (auto &projectile : state.world_projectiles)
+  {
+    RenderProjectile(projectile);
   }
 
 

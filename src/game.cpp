@@ -12,7 +12,6 @@
 
 #include <SDL.h>
 
-
 Game::Game()
 {
 }
@@ -36,6 +35,13 @@ void Game::UpdateItem(Item& item, float dt)
     item.cooldown -= dt;
     if (item.cooldown < 0.0f) item.cooldown = 0.0f;
   }
+}
+
+
+void Game::UpdateProjectile(Projectile& projectile, float dt)
+{
+  projectile.ttl -= dt;
+  projectile.position += (projectile.velocity * dt);
 }
 
 
@@ -65,13 +71,18 @@ void Game::Update(float dt)
       }
     }
   }
+
+  for (auto& projectile : gamestate.world_projectiles)
+  {
+    UpdateProjectile(projectile, dt);
+  }
 }
 
 
 void Game::ProcessKeyInput(int key, bool down)
 {
 
-  std::cout << "Input key: '" << SDL_GetKeyName(key) << "'  "
+  std::cout << "Input key: '" << GetInputName(key) << "'  "
             //<< (gamestate.drop_mode ? "DROP MODE" : "Pickup Mode")
             << (down ? "(Down)" : "(Up)")
             << std::endl;
@@ -91,7 +102,7 @@ void Game::ProcessKeyInput(int key, bool down)
       }
       else
       {
-        std::cout << "Nothing in inventory slot " << SDL_GetKeyName(key) << std::endl;
+        std::cout << "Nothing in inventory slot " << GetInputName(key) << std::endl;
       }
     }
     else
@@ -108,9 +119,28 @@ void Game::ProcessKeyInput(int key, bool down)
 }
 
 
+void Game::ProcessMouseInput(int button, bool down)
+{
+  if (down) std::cout << "Input mouse button: '" << GetInputName(button) << "'" << std::endl;
+
+  ProcessKeyInput(button, down);
+}
+
+
+void Game::ProcessMouseMotion(int x, int y)
+{
+  gamestate.mouse_position = {float(x), float(y)};
+
+  vec2 player_to_mouse = gamestate.mouse_position - gamestate.player.position;
+  if (player_to_mouse.x == 0.0f and player_to_mouse.y == 0.0f) player_to_mouse.x = 1.0f;
+
+  gamestate.player.direction = player_to_mouse;
+}
+
+
 void Game::PickupItem(int key, Item& item)
 {
-  std::cout << "Picked up item '" << item.name << "'  - Bound to key  " << SDL_GetKeyName(key) << std::endl;
+  std::cout << "Picked up item '" << item.name << "'  - Bound to key  " << GetInputName(key) << std::endl;
   assert(not key_exists(gamestate.player.KeyBindInventory, key));
 
   gamestate.player.KeyBindInventory.insert({key, item});
@@ -123,7 +153,7 @@ void Game::DropItem(int key, bool down)
   auto it = gamestate.player.KeyBindInventory.find(key);
   if (it == gamestate.player.KeyBindInventory.end())
   {
-    std::cout << "Noting in that inventory slot to drop  " << SDL_GetKeyName(key) << std::endl;
+    std::cout << "Noting in that inventory slot to drop  " << GetInputName(key) << std::endl;
     gamestate.drop_mode = false;
   }
   else
@@ -155,12 +185,6 @@ void Game::DropItem(int key, bool down)
   }
 }
 
-
-void Game::ProcessMouseInput(int button, bool down)
-{
-  if (down) std::cout << "Input mouse button: '" << GetMouseButtonName(button) << "'" << std::endl;
-}
-
 void Game::ActivateCommand(Item& item, bool down)
 {
   float player_speed = down ? 400 : 0;
@@ -184,6 +208,15 @@ void Game::ActivateItem(Item& item, bool down)
 {
   if (item.type == Item_Type::command) return ActivateCommand(item, down);
 
+  if (item.type == Item_Type::health)
+  {
+  }
+
+  if (item.type == Item_Type::gun)
+  {
+    ShootProjectile(gamestate.player.position, gamestate.player.direction, item);
+  }
+
   if (item.cooldown > 0.0f)
   {
     std::cout << "'" << item.name << "' is recharging (" << item.cooldown << " seconds)" << std::endl;
@@ -201,6 +234,22 @@ void Game::RemoveDeadItems()
   gamestate.closest_item = nullptr;
 
   remove_if_inplace(gamestate.world_items, [](auto& i) { return not i.alive; });
+
+  remove_if_inplace(gamestate.world_projectiles, [](auto& p) { return p.ttl <= 0.0f; });
+}
+
+
+void Game::ShootProjectile(vec2 position, vec2 direction, Item& item)
+{
+  Projectile p;
+  p.position = position;
+  p.velocity = normalize(direction) * 800.0f;
+  p.radius = 20.0f;
+  p.damage = item.projectile_damage;
+
+  p.ttl = 2.0f;
+
+  gamestate.world_projectiles.push_back(p);
 }
 
 
@@ -246,7 +295,7 @@ void Game::NewGame()
   NewPlayer();
 
 
-  for (int i = 0; i < 100; i++)
+  for (int i = 0; i < 10; i++)
   {
     Item item = GenerateRandomItem(random.Position());
 

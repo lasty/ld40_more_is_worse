@@ -6,14 +6,17 @@
 #include <string>
 #include <vector>
 
+
 enum class Active_Type
 {
   none,
   passive,
+  repeatable,
   limited_use,
   toggle,
   hold_down,
 };
+
 
 enum class Item_Type
 {
@@ -22,6 +25,7 @@ enum class Item_Type
   health,
   gun
 };
+
 
 struct Item
 {
@@ -37,8 +41,23 @@ struct Item
   bool colliding = false;
 
   float cooldown = 0.0f;
+  float cooldown_max = 0.0f;
+
+  int healing_amount = 0;
+  int projectile_damage = 0;
 
   std::string name = "Uninitialized Item!";
+};
+
+
+struct Projectile
+{
+  vec2 position{0.0f, 0.0f};
+  vec2 velocity{0.0f, 0.0f};
+  int damage;
+  float radius;
+
+  float ttl = 0.0f;
 };
 
 
@@ -54,6 +73,8 @@ struct Player
   vec2 position{200.0f, 200.0f};
   vec2 velocity{0.0f, 0.0f};
   float radius = 30.0f;
+
+  vec2 direction{1.0f, 0.0f};
 
   Health health{100, 100};
 
@@ -94,11 +115,13 @@ struct GameState
 
   bool drop_mode = false;
 
+  vec2 mouse_position{0.0f, 0.0f};
 
   Player player;
 
   std::vector<Item> world_items;
 
+  std::vector<Projectile> world_projectiles;
+
   Item* closest_item = nullptr;
 };
-

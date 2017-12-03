@@ -29,10 +29,12 @@ public:
 
   void UpdatePlayer(float dt);
   void UpdateItem(Item& item, float dt);
+  void UpdateProjectile(Projectile& projectile, float dt);
   void Update(float dt);
 
   void ProcessKeyInput(int key, bool down);
   void ProcessMouseInput(int button, bool down);
+  void ProcessMouseMotion(int x, int y);
 
   void PickupItem(int key, Item& item);
   void DropItem(int key, bool down);
@@ -42,6 +44,9 @@ public:
   void ActivateItem(Item& item, bool down);
 
   void RemoveDeadItems();
+
+  void ShootProjectile(vec2 position, vec2 direction, Item& item);
+
 
   Item GenerateRandomItem(vec2 position);
 

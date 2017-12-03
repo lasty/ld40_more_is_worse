@@ -30,20 +30,29 @@ Item ItemFactory::GenerateRandomItem()
 {
   Item i;
 
-  Item_Type type = random.PickList(item_type_list);
+  i.type = random.PickList(item_type_list);
 
-  switch (type)
+  switch (i.type)
   {
     case Item_Type::gun:
       i.name = "Gun";
+      i.activate = Active_Type::repeatable;
       i.radius = 15;
       i.colour = random.ColourVarying({0.8f, 0.6f, 0.2f, 1.0f});
+
+      i.projectile_damage = random.Int(1, 5);
+      i.cooldown_max = random.Int(1, 5);
+
       break;
 
     case Item_Type::health:
       i.name = "HealthKit";
+      i.activate = Active_Type::repeatable;
       i.radius = 20;
       i.colour = random.ColourVarying({0.8f, 0.2f, 0.2f, 1.0f});
+      i.healing_amount = random.Int(5, 20);
+      i.cooldown_max = random.Int(1, 5);
+
       break;
 
     case Item_Type::command:

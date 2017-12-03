@@ -5,7 +5,7 @@
 
 
 //Game stuff
-std::string GetMouseButtonName(int button);
+std::string GetInputName(int button_or_key);
 
 
 //Maths stuff
