@@ -119,6 +119,14 @@ void Renderer::DrawVertexData(GLenum draw_type, const VertexDataTextured &vertex
 }
 
 
+std::string GetHealthText(const Health &health)
+{
+  std::stringstream ss;
+  ss << "[ " << health.current << " / " << health.max << " ]";
+  return ss.str();
+}
+
+
 void Renderer::RenderPlayer(const Player &player)
 {
   lines_data.DrawCircle(player.position, player.radius, green);
@@ -127,8 +135,10 @@ void Renderer::RenderPlayer(const Player &player)
   vec2 facing_circle = player.position + (direction * player.radius);
   lines_data.DrawCircle(facing_circle, player.radius / 4.0f, green);
 
-
-  font2.RenderString(text_data, "Player", player.position + vec2{-20.0f, player.radius});
+  vec2 label_pos = player.position + vec2{-20.0f, player.radius};
+  font2.RenderString(text_data, "Player", label_pos);
+  label_pos.y += 20;
+  font2.RenderString(text_data, GetHealthText(player.health), label_pos, green);
 }
 
 
@@ -293,6 +303,30 @@ void Renderer::RenderMonsterInfoCard(const Monster &monster, const vec2 &mouse_p
   vec2 infocard_pos = mouse_pos + vec2{10.0f, 20.0f};
 
   font2.RenderString(text_data, monster.name, infocard_pos, white);
+  infocard_pos.y += 20;
+
+
+  switch (monster.type)
+  {
+    case Monster_Type::dummy:
+      font2.RenderString(text_data, "Dummy", infocard_pos, red);
+      infocard_pos.y += 20;
+      break;
+
+    case Monster_Type::melee:
+      font2.RenderString(text_data, "Melee", infocard_pos, red);
+      infocard_pos.y += 20;
+      break;
+
+    case Monster_Type::shooter:
+      font2.RenderString(text_data, "Shooter", infocard_pos, red);
+      infocard_pos.y += 20;
+      break;
+  }
+
+  vec2 pos2 = font2.RenderString(text_data, "Health ", infocard_pos, grey);
+  font2.RenderString(text_data, GetHealthText(monster.health), pos2, green);
+  infocard_pos.y += 20;
 }
 
 

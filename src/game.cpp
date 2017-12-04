@@ -44,13 +44,15 @@ void Game::UpdateProjectile(Projectile& projectile, float dt)
   projectile.position += (projectile.velocity * dt);
 }
 
+
 void Game::UpdateMonster(Monster& monster, float dt)
 {
   if (monster.health.current <= 0) monster.alive = false;
 }
 
 
-Item* GetClosest(vec2 position, Item* i1, Item& i2)
+template<typename ITEM>
+ITEM* GetClosest(vec2 position, ITEM* i1, ITEM& i2)
 {
   if (i1 == nullptr)
   {
@@ -68,6 +70,7 @@ Item* GetClosest(vec2 position, Item* i1, Item& i2)
     }
   }
 }
+
 
 void Game::Update(float dt)
 {
@@ -108,9 +111,16 @@ void Game::Update(float dt)
     }
   }
 
+  gamestate.mouseover_monster = nullptr;
+
   for (auto& monster : gamestate.world_monsters)
   {
     UpdateMonster(monster, dt);
+
+    if (Collides(gamestate.mouse_position, 20.0f, monster.position, monster.radius))
+    {
+      gamestate.mouseover_monster = GetClosest(gamestate.mouse_position, gamestate.mouseover_monster, monster);
+    }
   }
 }
 
