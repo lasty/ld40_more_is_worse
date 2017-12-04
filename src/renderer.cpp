@@ -1,10 +1,9 @@
 
 #include "renderer.hpp"
 
+#include <cassert>
 #include <sstream>
 #include <vector>
-
-// #include <SDL.h>
 
 #include "game.hpp"
 #include "gl.hpp"
@@ -155,25 +154,40 @@ void Renderer::RenderItem(const Item &item, bool colliding, bool moused_over)
 }
 
 
-std::string GetCooldownText(const Item &item)
+std::string GetLimitedUsesText(const Item &item, bool inv_view)
 {
-  if (item.activate == Active_Type::none or item.activate == Active_Type::passive) return "";
+  assert(item.has_limited_uses);
 
-  std::stringstream ss_cooldown;
-  ss_cooldown.precision(1);
-  ss_cooldown << std::fixed;
-  ss_cooldown << " [" << item.cooldown_max << "s cooldown]";
-  return ss_cooldown.str();
+  std::stringstream ss;
+  if (inv_view)
+  {
+    unsigned char mult_symbol = 215;
+    ss << "  " << mult_symbol << item.uses_left;
+  }
+  else
+  {
+    ss << item.uses_left;
+  }
+
+  return ss.str();
 }
 
 
-std::string GetActiveCooldownText(const Item &item)
+std::string GetCooldownText(const Item &item, bool inv_view)
 {
-  std::stringstream ss_cooldown;
-  ss_cooldown.precision(1);
-  ss_cooldown << std::fixed;
-  ss_cooldown << " [" << item.cooldown << "s]";
-  return ss_cooldown.str();
+  assert(item.has_cooldown);
+
+  std::stringstream ss;
+  SetStreamFormat(ss);
+  if (inv_view)
+  {
+    ss << "  [" << item.cooldown << "s]";
+  }
+  else
+  {
+    ss << item.cooldown_max << " seconds";
+  }
+  return ss.str();
 }
 
 
@@ -224,48 +238,39 @@ void Renderer::RenderItemInfoCard(const Item &item, const vec2 &mouse_pos)
       break;
   }
 
-  vec2 pos2;
-
-  switch (item.activate)
+  if (item.has_limited_uses)
   {
-    case Active_Type::none:
-      font2.RenderString(text_data, "[None]", infocard_pos, grey);
-      infocard_pos.y += 20;
-      break;
-
-    case Active_Type::hold_down:
-      pos2 = font2.RenderString(text_data, "Hold to use ", infocard_pos, grey);
-      infocard_pos.y += 20;
-      break;
-
-    case Active_Type::limited_use:
-      pos2 = font2.RenderString(text_data, "Limited uses ", infocard_pos, grey);
-      infocard_pos.y += 20;
-      break;
-
-    case Active_Type::passive:
-      pos2 = font2.RenderString(text_data, "Passive", infocard_pos, grey);
-      infocard_pos.y += 20;
-      break;
-
-    case Active_Type::repeatable:
-      pos2 = font2.RenderString(text_data, "Repeatable", infocard_pos, grey);
-      infocard_pos.y += 20;
-      break;
-
-    case Active_Type::toggle:
-      pos2 = font2.RenderString(text_data, "Toggle on/off ", infocard_pos, grey);
-      infocard_pos.y += 20;
-      break;
+    vec2 pos2 = font2.RenderString(text_data, "Limited uses: ", infocard_pos, grey);
+    pos2 = font2.RenderString(text_data, GetLimitedUsesText(item, false), pos2, green);
+    infocard_pos.y += 20;
   }
 
-  std::string cooldown_text = GetCooldownText(item);
-
-  if (not cooldown_text.empty())
+  if (item.has_cooldown)
   {
-    font2.RenderString(text_data, cooldown_text, pos2, green);
+    vec2 pos2 = font2.RenderString(text_data, "Cooldown: ", infocard_pos, grey);
+    font2.RenderString(text_data, GetCooldownText(item, false), pos2, green);
+    infocard_pos.y += 20;
   }
+
+  //   case Active_Type::none:
+  //     font2.RenderString(text_data, "[None]", infocard_pos, grey);
+
+  //   case Active_Type::hold_down:
+  //     pos2 = font2.RenderString(text_data, "Hold to use ", infocard_pos, grey);
+
+  //   case Active_Type::limited_use:
+  //     pos2 = font2.RenderString(text_data, "Limited uses ", infocard_pos, grey);
+
+  //   case Active_Type::passive:
+  //     pos2 = font2.RenderString(text_data, "Passive", infocard_pos, grey);
+
+  //   case Active_Type::repeatable:
+  //     pos2 = font2.RenderString(text_data, "Repeatable", infocard_pos, grey);
+
+  //   case Active_Type::toggle:
+  //     pos2 = font2.RenderString(text_data, "Toggle on/off ", infocard_pos, grey);
 }
+
 
 void Renderer::RenderMonster(const Monster &monster, bool moused_over)
 {
@@ -285,6 +290,9 @@ void Renderer::RenderMonster(const Monster &monster, bool moused_over)
 
 void Renderer::RenderMonsterInfoCard(const Monster &monster, const vec2 &mouse_pos)
 {
+  vec2 infocard_pos = mouse_pos + vec2{10.0f, 20.0f};
+
+  font2.RenderString(text_data, monster.name, infocard_pos, white);
 }
 
 
@@ -308,9 +316,14 @@ void Renderer::RenderInventory(std::map<int, Item> inventory)
 
     vec2 pos2 = font2.RenderString(text_data, ss_item.str(), pos, grey);
 
-    if (item.cooldown > 0.0f)
+    if (item.has_limited_uses)
     {
-      font2.RenderString(text_data, GetActiveCooldownText(item), pos2, green);
+      pos2 = font2.RenderString(text_data, GetLimitedUsesText(item, true), pos2, red);
+    }
+
+    if (item.has_cooldown and item.cooldown > 0.0f)
+    {
+      font2.RenderString(text_data, GetCooldownText(item, true), pos2, green);
     }
 
     pos.y += 20.0f;
@@ -321,10 +334,6 @@ void Renderer::RenderInventory(std::map<int, Item> inventory)
 void Renderer::RenderGame(const GameState &state)
 {
   oscilate = sin(state.wallclock * 5.0f);
-
-  // const bool draw_normals = state.debug_enabled;
-  // const bool draw_velocity = state.debug_enabled;
-  // const bool draw_bounds = state.debug_enabled;
 
   EnableBlend();
 

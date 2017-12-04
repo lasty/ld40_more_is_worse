@@ -22,6 +22,7 @@ endif()
 ##### Main target
 
 add_executable(ld40 WIN32
+  src/factories.cpp
   src/game.cpp
   src/gl.cpp
   src/items.cpp

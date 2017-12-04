@@ -4,7 +4,8 @@
 #include <random>
 #include <vector>
 
-#include "game_state.hpp"
+#include "factories.hpp"
+#include "game_types.hpp"
 #include "items.hpp"
 #include "maths_types.hpp"
 #include "sound.hpp"

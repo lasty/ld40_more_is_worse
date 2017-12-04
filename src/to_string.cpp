@@ -9,6 +9,13 @@
 #include "maths_types.hpp"
 
 
+void SetStreamFormat(std::ostream &os)
+{
+  os.precision(1);
+  os << std::fixed;
+}
+
+
 std::ostream &operator<<(std::ostream &out, vec2 const &v2)
 {
   return out << "vec2{" << v2.x << ", " << v2.y << "}";

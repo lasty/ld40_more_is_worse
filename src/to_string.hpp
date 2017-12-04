@@ -4,6 +4,10 @@
 #include <string>
 
 
+//Set stream number formats to be readable
+void SetStreamFormat(std::ostream &os);
+
+
 //Game stuff
 std::string GetInputName(int button_or_key);
 

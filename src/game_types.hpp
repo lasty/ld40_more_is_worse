@@ -6,49 +6,7 @@
 #include <string>
 #include <vector>
 
-
-enum class Active_Type
-{
-  none,
-  passive,
-  repeatable,
-  limited_use,
-  toggle,
-  hold_down,
-};
-
-
-enum class Item_Type
-{
-  none,
-  command,
-  health,
-  gun
-};
-
-
-struct Item
-{
-  bool alive = true;
-
-  Active_Type activate = Active_Type::none;
-  Item_Type type = Item_Type::none;
-
-  vec2 position{0.0f, 0.0f};
-  float radius = 5.0f;
-  col4 colour{0.5f, 0.5f, 0.5f, 1.0f};
-
-  bool colliding = false;
-
-  float cooldown = 0.0f;
-  float cooldown_max = 0.0f;
-
-  int healing_amount = 0;
-  int projectile_damage = 0;
-
-  std::string name = "Uninitialized Item!";
-};
-
+#include "items.hpp"
 
 struct Projectile
 {

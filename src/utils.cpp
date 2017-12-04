@@ -34,6 +34,7 @@ col4 Random::Colour()
   return {Float(0.0f, 1.0f), Float(0.0f, 1.0f), Float(0.0f, 1.0f), 1.0f};
 }
 
+
 col4 Random::ColourVarying(col4 colour)
 {
   float variance = 0.15f;
@@ -41,4 +42,10 @@ col4 Random::ColourVarying(col4 colour)
   colour.g += Float(-variance, variance);
   colour.b += Float(-variance, variance);
   return colour;
+}
+
+
+int Random::Percent()
+{
+  return Int(1, 100);
 }

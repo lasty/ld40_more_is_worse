@@ -56,4 +56,6 @@ public:
     int index = Int(0, container.size() - 1);
     return container.at(index);
   }
+
+  int Percent();
 };

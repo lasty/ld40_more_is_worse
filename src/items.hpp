@@ -1,28 +1,56 @@
 #pragma once
 
-#include "game_state.hpp"
 
 #include <vector>
 
 #include "utils.hpp"
 
 
-class ItemFactory
+enum class Item_Type
 {
-private:
-  std::vector<Active_Type> active_type_list;
-  std::vector<Item_Type> item_type_list;
-  std::vector<Monster_Type> monster_type_list;
-
-public:
-  Random random;
-
-  ItemFactory();
-
-  Item GenerateRandomItem();
-
-  Monster GenerateRandomMonster();
-
-
-  Item GetCommand(std::string what);
+  none,
+  command,
+  health,
+  gun
 };
+
+
+struct Item
+{
+  bool alive = true;
+
+  Item_Type type = Item_Type::none;
+
+  vec2 position{0.0f, 0.0f};
+  float radius = 5.0f;
+  col4 colour{0.5f, 0.5f, 0.5f, 1.0f};
+
+  bool colliding = false;
+
+  void AddCooldown(float c);
+  bool has_cooldown = false;
+  float cooldown = 0.0f;
+  float cooldown_max = 0.0f;
+
+  void AddLimitedUses(int n);
+  bool has_limited_uses = false;
+  int uses_left = 0;
+
+  //todo passive, toggle, push to activate
+
+  void CreateCommand(std::string c);
+  //bool is_command;
+  std::string command;
+
+  void CreateHealing(int amount);
+  //bool is_healing = false;
+  int healing_amount = 0;
+
+  void CreateGun(int damage);
+  //bool is_gun = false;
+  int projectile_damage = 0;
+
+
+  std::string name = "Uninitialized Item!";
+};
+
