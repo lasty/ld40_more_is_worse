@@ -37,3 +37,32 @@ void Item::CreateGun(int damage)
   projectile_damage = damage;
 }
 
+
+bool Item::CanActivate() const
+{
+  if (has_cooldown)
+  {
+    if (cooldown > 0.0f) return false;
+  }
+
+  if (has_limited_uses)
+  {
+    if (uses_left <= 0) return false;
+  }
+
+  return true;
+}
+
+
+void Item::UseActivation()
+{
+  if (has_cooldown)
+  {
+    cooldown = cooldown_max;
+  }
+
+  if (has_limited_uses)
+  {
+    uses_left--;
+  }
+}

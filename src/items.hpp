@@ -36,6 +36,10 @@ struct Item
   bool has_limited_uses = false;
   int uses_left = 0;
 
+  bool CanActivate() const;
+  void UseActivation();
+
+
   //todo passive, toggle, push to activate
 
   void CreateCommand(std::string c);

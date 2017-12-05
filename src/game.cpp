@@ -251,49 +251,17 @@ void Game::ActivateCommand(Item& item, bool down)
 }
 
 
-bool CanActivate(const Item& item)
-{
-  if (item.has_cooldown)
-  {
-    std::cout << "'" << item.name << "' is recharging (" << item.cooldown << " seconds)" << std::endl;
-    if (item.cooldown > 0.0f) return false;
-  }
-
-  if (item.has_limited_uses)
-  {
-    std::cout << "'" << item.name << "' is out of uses" << std::endl;
-    if (item.uses_left <= 0) return false;
-  }
-
-  return true;
-}
-
-
-void JustActivated(Item& item)
-{
-  if (item.has_cooldown)
-  {
-    item.cooldown = item.cooldown_max;
-  }
-
-  if (item.has_limited_uses)
-  {
-    item.uses_left--;
-  }
-}
-
-
 void Game::ActivateItem(Item& item, bool down)
 {
   if (item.type == Item_Type::command) return ActivateCommand(item, down);
 
-  if (CanActivate(item))
+  if (item.CanActivate())
   {
     if (down)
     {
       std::cout << "Activate item  '" << item.name << "'  !!!  " << std::endl;
 
-      JustActivated(item);
+      item.UseActivation();
 
       if (item.type == Item_Type::health)
       {
