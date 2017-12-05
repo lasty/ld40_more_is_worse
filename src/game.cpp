@@ -251,27 +251,61 @@ void Game::ActivateCommand(Item& item, bool down)
 }
 
 
+bool CanActivate(const Item& item)
+{
+  if (item.has_cooldown)
+  {
+    std::cout << "'" << item.name << "' is recharging (" << item.cooldown << " seconds)" << std::endl;
+    if (item.cooldown > 0.0f) return false;
+  }
+
+  if (item.has_limited_uses)
+  {
+    std::cout << "'" << item.name << "' is out of uses" << std::endl;
+    if (item.uses_left <= 0) return false;
+  }
+
+  return true;
+}
+
+
+void JustActivated(Item& item)
+{
+  if (item.has_cooldown)
+  {
+    item.cooldown = item.cooldown_max;
+  }
+
+  if (item.has_limited_uses)
+  {
+    item.uses_left--;
+  }
+}
+
+
 void Game::ActivateItem(Item& item, bool down)
 {
   if (item.type == Item_Type::command) return ActivateCommand(item, down);
 
-  if (item.type == Item_Type::health)
+  if (CanActivate(item))
   {
-  }
+    if (down)
+    {
+      std::cout << "Activate item  '" << item.name << "'  !!!  " << std::endl;
 
-  if (item.type == Item_Type::gun)
-  {
-    ShootProjectile(gamestate.player.position, gamestate.player.direction, item);
-  }
+      JustActivated(item);
 
-  if (item.cooldown > 0.0f)
-  {
-    std::cout << "'" << item.name << "' is recharging (" << item.cooldown << " seconds)" << std::endl;
-  }
-  else
-  {
-    std::cout << "Activate item  '" << item.name << "'  !!!  " << std::endl;
-    item.cooldown = 5.0f;
+      if (item.type == Item_Type::health)
+      {
+        std::cout << "Health + " << item.healing_amount << std::endl;
+        gamestate.player.health.current += item.healing_amount;
+      }
+
+      if (item.type == Item_Type::gun)
+      {
+        ShootProjectile(gamestate.player.position, gamestate.player.direction, item);
+      }
+    }
   }
 }
 
