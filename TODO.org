@@ -2,10 +2,7 @@
 # Todo List
 
 
-* TODO Mouseover items for an info card
-
 * Monster class
-    * Health Bars
     * Melee Attacks player when touching
     * Shoots bullets towards player
 
@@ -22,7 +19,6 @@
 
 * Mouse over inventory to display info card
 
-* Mouse over enemies for info card?
 
 
 # Refactor

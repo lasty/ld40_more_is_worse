@@ -303,7 +303,7 @@ out vec4 out_colour;
 
 void main(void)
 {
-  vec4 tex_colour = texture(tex_id, uv_coords);
+  vec4 tex_colour = texture(tex_id, uv_coords / textureSize(tex_id, 0));
 
   out_colour = tex_colour * colour * vertex_colour;
   //out_colour = vertex_colour;

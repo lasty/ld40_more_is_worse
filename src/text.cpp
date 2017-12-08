@@ -106,10 +106,8 @@ void Text::RenderGlyph(VertexDataTextured &vertex_data, glyph g, vec2 pos)
   vec2 pos1{pos.x + g.xoffset, pos.y + g.yoffset};
   vec2 pos2{pos1.x + g.width, pos1.y + g.height};
 
-  float res = 256.0f;
-
-  vec2 uv1{g.x / res, g.y / res};
-  vec2 uv2{(g.x + g.width) / res, (g.y + g.height) / res};
+  vec2 uv1{float(g.x), float(g.y)};
+  vec2 uv2{float(g.x + g.width), float(g.y + g.height)};
 
   vertex_data.DrawQuad(pos1, uv1, pos2, uv2, current_colour);
 }

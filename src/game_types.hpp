@@ -8,6 +8,7 @@
 
 #include "items.hpp"
 
+
 struct Projectile
 {
   vec2 position{0.0f, 0.0f};

@@ -322,6 +322,9 @@ void Renderer::RenderMonsterInfoCard(const Monster &monster, const vec2 &mouse_p
       font2.RenderString(text_data, "Shooter", infocard_pos, red);
       infocard_pos.y += 20;
       break;
+
+    case Monster_Type::none:
+      break;
   }
 
   vec2 pos2 = font2.RenderString(text_data, "Health ", infocard_pos, grey);

@@ -115,6 +115,10 @@ void main_game()
 
   GL::Debuging(true);
 
+  int max_array_texture_layers = GL::GetInteger(GL_MAX_ARRAY_TEXTURE_LAYERS);
+  std::cout << "Max Array Texture Layers: " << max_array_texture_layers << std::endl;
+
+
   SDL_GL_SetSwapInterval(SWAP_INTERVAL);
 
   {

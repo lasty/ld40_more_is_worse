@@ -31,6 +31,7 @@ add_executable(ld40 WIN32
   src/renderer.cpp
   src/shader.cpp
   src/sound.cpp
+  src/sprites.cpp
   src/text.cpp
   src/texture.cpp
   src/to_string.cpp

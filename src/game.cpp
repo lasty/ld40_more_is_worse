@@ -12,6 +12,10 @@
 
 #include <SDL.h>
 
+
+constexpr bool DEBUG_INPUT = false;
+
+
 Game::Game()
 {
 }
@@ -48,6 +52,7 @@ void Game::UpdateProjectile(Projectile& projectile, float dt)
 void Game::UpdateMonster(Monster& monster, float dt)
 {
   if (monster.health.current <= 0) monster.alive = false;
+  monster.position += (monster.velocity * dt);
 }
 
 
@@ -127,11 +132,9 @@ void Game::Update(float dt)
 
 void Game::ProcessKeyInput(int key, bool down)
 {
-
-  std::cout << "Input key: '" << GetInputName(key) << "'  "
-            //<< (gamestate.drop_mode ? "DROP MODE" : "Pickup Mode")
-            << (down ? "(Down)" : "(Up)")
-            << std::endl;
+  if constexpr (DEBUG_INPUT)
+    std::cout << "Input key: '" << GetInputName(key) << "'  "
+              << (down ? "(Pressed)" : "(Released)") << std::endl;
 
   if (not gamestate.drop_mode)
   {
@@ -168,7 +171,8 @@ void Game::ProcessKeyInput(int key, bool down)
 
 void Game::ProcessMouseInput(int button, bool down)
 {
-  if (down) std::cout << "Input mouse button: '" << GetInputName(button) << "'" << std::endl;
+  if constexpr (DEBUG_INPUT and down)
+    std::cout << "Input mouse button: '" << GetInputName(button) << "'" << std::endl;
 
   ProcessKeyInput(button, down);
 }
