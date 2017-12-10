@@ -1,13 +1,34 @@
 
 #include "maths.hpp"
 
+#include <cassert>
 #include <stdexcept>
-
 
 //Vectors should be packed for use by opengl functions
 static_assert(sizeof(vec2) == sizeof(float) * 2, "vec2 not packed correctly");
 static_assert(sizeof(vec3) == sizeof(float) * 3, "vec3 not packed correctly");
-static_assert(sizeof(col4) == sizeof(float) * 4, "col4 not packed correctly");
+static_assert(sizeof(col4) == sizeof(char) * 4, "col4 not packed correctly");
+
+
+constexpr uint8_t FloatToUint8(float f)
+{
+  assert(f >= 0.0f and f <= 1.0f);
+  return (f * 255.0f);
+}
+
+
+col4::col4(float r, float g, float b, float a)
+: r(FloatToUint8(r))
+, g(FloatToUint8(g))
+, b(FloatToUint8(b))
+, a(FloatToUint8(a))
+{
+}
+
+
+// col4::col4(const std::string &hex)
+// {
+// }
 
 
 float degrees(float radians)
@@ -277,6 +298,7 @@ mat4 mat4_identity()
 
   return m;
 }
+
 
 mat4 mat4_zero()
 {

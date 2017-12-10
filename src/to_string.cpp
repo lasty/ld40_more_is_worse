@@ -30,8 +30,8 @@ std::ostream &operator<<(std::ostream &out, vec3 const &v3)
 
 std::ostream &operator<<(std::ostream &out, col4 const &v4)
 {
-  return out << "col4{" << v4.r << ", " << v4.g
-             << ", " << v4.b << ", " << v4.a << "}";
+  return out << "col4{" << (int)v4.r << ", " << (int)v4.g
+             << ", " << (int)v4.b << ", " << (int)v4.a << "}";
 }
 
 

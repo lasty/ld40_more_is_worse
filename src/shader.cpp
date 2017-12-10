@@ -93,10 +93,10 @@ void Basic::SetColour(float r, float g, float b, float a)
 }
 
 
-void Basic::SetColour(col4 const &colour)
-{
-  glProgramUniform4fv(program_id, uniforms.colour, 1, reinterpret_cast<const GLfloat *>(&colour));
-}
+// void Basic::SetColour(col4 const &colour)
+// {
+//   glProgramUniform4fv(program_id, uniforms.colour, 1, reinterpret_cast<const GLfloat *>(&colour));
+// }
 
 
 const std::string Basic::vertex_src =
@@ -238,10 +238,10 @@ void Textured::SetColour(float r, float g, float b, float a)
 }
 
 
-void Textured::SetColour(col4 const &colour)
-{
-  glProgramUniform4fv(program_id, uniforms.colour, 1, reinterpret_cast<const GLfloat *>(&colour));
-}
+// void Textured::SetColour(col4 const &colour)
+// {
+//   glProgramUniform4fv(program_id, uniforms.colour, 1, reinterpret_cast<const GLfloat *>(&colour));
+// }
 
 
 void Textured::SetTexture(int tex_unit)

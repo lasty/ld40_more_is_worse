@@ -7,6 +7,40 @@
 #include <stdexcept>
 
 
+template<typename T>
+void AttachAttribute(int attrib_id, size_t stride, size_t offset)
+{
+  const GLvoid *offset_ptr = reinterpret_cast<GLvoid *>(offset);
+
+  if constexpr (std::is_same<T, vec2>::value)
+  {
+    glVertexAttribPointer(attrib_id, 2, GL_FLOAT, GL_FALSE, stride, offset_ptr);
+  }
+  else if constexpr (std::is_same<T, col4>::value)
+  {
+    glVertexAttribPointer(attrib_id, 4, GL_UNSIGNED_BYTE, GL_TRUE, stride, offset_ptr);
+  }
+  else
+  {
+    throw std::runtime_error("Unknown attrib type");
+  }
+
+  glEnableVertexAttribArray(attrib_id);
+}
+
+
+#define ATTACH_ATTRIBUTE(attrib_id, v, field) \
+  AttachAttribute<typeof(v::field)>(attrib_id, sizeof(v), offsetof(v, field))
+
+
+void DetachAttribute(int attrib_id)
+{
+  // glBindVertexArray(vao_id);
+  glDisableVertexAttribArray(attrib_id);
+  // glBindVertexArray(0);
+}
+
+
 VertexDataBasic::VertexDataBasic(GLenum usage)
 : usage(usage)
 {
@@ -16,8 +50,11 @@ VertexDataBasic::VertexDataBasic(GLenum usage)
   glBindVertexArray(vao_id);
   glBindBuffer(GL_ARRAY_BUFFER, buffer_id);
 
-  AttachAttribute(0, 2, 0, GL_FLOAT); //position location = 0
-  AttachAttribute(1, 4, 2, GL_FLOAT); //colour, location = 1
+  // AttachAttribute(0, 2, 0, GL_FLOAT); //position location = 0
+  // AttachAttribute(1, 4, 2, GL_FLOAT); //colour, location = 1
+  ATTACH_ATTRIBUTE(0, Vertex, position);
+  ATTACH_ATTRIBUTE(1, Vertex, colour);
+
 
   glBindVertexArray(0);
 }
@@ -42,28 +79,21 @@ void VertexDataBasic::Clear()
   vertex_data.clear();
 }
 
+void VertexDataBasic::AddVertex(const Vertex &v)
+{
+  vertex_data.push_back(v);
+}
+
 
 void VertexDataBasic::AddVertex(const vec2 &position, const col4 &colour)
 {
-  vertex_data.push_back(position.x);
-  vertex_data.push_back(position.y);
-  vertex_data.push_back(colour.r);
-  vertex_data.push_back(colour.g);
-  vertex_data.push_back(colour.b);
-  vertex_data.push_back(colour.a);
+  AddVertex({position, colour});
 }
 
 
 void VertexDataBasic::AddVertex(float x, float y, const col4 &colour)
 {
-  vertex_data.push_back(x);
-  vertex_data.push_back(y);
-  vertex_data.push_back(colour.r);
-  vertex_data.push_back(colour.g);
-  vertex_data.push_back(colour.b);
-  vertex_data.push_back(colour.a);
-
-  assert(vertex_data.size() % floats_per_vertex == 0);
+  AddVertex({{x, y}, colour});
 }
 
 
@@ -77,20 +107,20 @@ void VertexDataBasic::AddLine(const vec2 &p1, const col4 &c1, const vec2 &p2, co
 void VertexDataBasic::UpdateVertexes()
 {
   glBindBuffer(GL_ARRAY_BUFFER, buffer_id);
-  glBufferData(GL_ARRAY_BUFFER, sizeof(float) * vertex_data.size(), vertex_data.data(), usage);
+  glBufferData(GL_ARRAY_BUFFER, sizeof(Vertex) * vertex_data.size(), vertex_data.data(), usage);
   // glBindBuffer(GL_ARRAY_BUFFER, 0);
 }
 
 
 int VertexDataBasic::GetOffset() const
 {
-  return vertex_data.size() / floats_per_vertex;
+  return vertex_data.size();
 }
 
 
 int VertexDataBasic::GetNumVertexes() const
 {
-  return vertex_data.size() / floats_per_vertex;
+  return vertex_data.size();
 }
 
 
@@ -100,24 +130,24 @@ int VertexDataBasic::GetVAO() const
 }
 
 
-void VertexDataBasic::AttachAttribute(int attrib_id, int size, int offset, GLenum type)
-{
-  const GLvoid *offset_ptr = reinterpret_cast<GLvoid *>(offset * sizeof(float));
-  // glBindVertexArray(vao_id);
-  // glBindBuffer(GL_ARRAY_BUFFER, buffer_id);
-  glVertexAttribPointer(attrib_id, size, type, GL_FALSE, stride, offset_ptr);
-  glEnableVertexAttribArray(attrib_id);
-  // glBindBuffer(GL_ARRAY_BUFFER, 0);
-  // glBindVertexArray(0);
-}
+// void VertexDataBasic::AttachAttribute(int attrib_id, int size, int offset, GLenum type)
+// {
+//   const GLvoid *offset_ptr = reinterpret_cast<GLvoid *>(offset * sizeof(float));
+//   // glBindVertexArray(vao_id);
+//   // glBindBuffer(GL_ARRAY_BUFFER, buffer_id);
+//   glVertexAttribPointer(attrib_id, size, type, GL_FALSE, stride, offset_ptr);
+//   glEnableVertexAttribArray(attrib_id);
+//   // glBindBuffer(GL_ARRAY_BUFFER, 0);
+//   // glBindVertexArray(0);
+// }
 
 
-void VertexDataBasic::DetachAttribute(int attrib_id)
-{
-  // glBindVertexArray(vao_id);
-  glDisableVertexAttribArray(attrib_id);
-  // glBindVertexArray(0);
-}
+// void VertexDataBasic::DetachAttribute(int attrib_id)
+// {
+//   // glBindVertexArray(vao_id);
+//   glDisableVertexAttribArray(attrib_id);
+//   // glBindVertexArray(0);
+// }
 
 
 void VertexDataBasic::DrawCircle(const vec2 &position, float radius, const col4 &colour)
@@ -178,8 +208,9 @@ void VertexDataBasic::DrawRect(vec2 position, vec2 size, col4 colour)
 ////////////////////
 
 
-VertexDataTextured::VertexDataTextured(GLenum usage)
+VertexDataTextured::VertexDataTextured(GLenum usage, GLenum primitive_type)
 : usage(usage)
+, primitive_type(primitive_type)
 {
   buffer_id = GL::CreateBuffers();
   vao_id = GL::CreateVertexArrays();
@@ -187,9 +218,13 @@ VertexDataTextured::VertexDataTextured(GLenum usage)
   glBindVertexArray(vao_id);
   glBindBuffer(GL_ARRAY_BUFFER, buffer_id);
 
-  AttachAttribute(0, 2, 0, GL_FLOAT); //position location = 0
-  AttachAttribute(1, 4, 2, GL_FLOAT); //colour, location = 1
-  AttachAttribute(2, 2, 6, GL_FLOAT); //uv, location = 2
+  // AttachAttribute(0, 2, 0, GL_FLOAT); //position location = 0
+  // AttachAttribute(1, 4, 2, GL_FLOAT); //colour, location = 1
+  // AttachAttribute(2, 2, 6, GL_FLOAT); //uv, location = 2
+  ATTACH_ATTRIBUTE(0, Vertex, position);
+  ATTACH_ATTRIBUTE(1, Vertex, colour);
+  ATTACH_ATTRIBUTE(2, Vertex, uv);
+
 
   glBindVertexArray(0);
 
@@ -218,24 +253,21 @@ void VertexDataTextured::Clear()
 }
 
 
+void VertexDataTextured::AddVertex(const Vertex &v)
+{
+  vertex_data.push_back(v);
+}
+
+
 void VertexDataTextured::AddVertex(const vec2 &position, const vec2 &uv, const col4 &colour)
 {
-  vertex_data.push_back(position.x);
-  vertex_data.push_back(position.y);
-  vertex_data.push_back(colour.r);
-  vertex_data.push_back(colour.g);
-  vertex_data.push_back(colour.b);
-  vertex_data.push_back(colour.a);
-  vertex_data.push_back(uv.x);
-  vertex_data.push_back(uv.y);
-
-  assert(vertex_data.size() % floats_per_vertex == 0);
+  vertex_data.push_back({position, colour, uv});
 }
 
 
 void VertexDataTextured::DrawQuad(vec2 pos1, vec2 uv1, vec2 pos2, vec2 uv2)
 {
-  constexpr col4 white{1.0f, 1.0f, 1.0f, 1.0f};
+  const col4 white{1.0f, 1.0f, 1.0f, 1.0f};
   return DrawQuad(pos1, uv1, pos2, uv2, white);
 }
 
@@ -264,21 +296,14 @@ void VertexDataTextured::DrawQuad(vec2 pos1, vec2 uv1, vec2 pos2, vec2 uv2, col4
 void VertexDataTextured::UpdateVertexes()
 {
   glBindBuffer(GL_ARRAY_BUFFER, buffer_id);
-  glBufferData(GL_ARRAY_BUFFER, sizeof(float) * vertex_data.size(), vertex_data.data(), usage);
-  // glBindBuffer(GL_ARRAY_BUFFER, 0);
+  glBufferData(GL_ARRAY_BUFFER, sizeof(Vertex) * vertex_data.size(), vertex_data.data(), usage);
 }
 
 
-int VertexDataTextured::GetOffset() const
-{
-  return vertex_data.size() / floats_per_vertex;
-}
-
-
-int VertexDataTextured::GetNumVertexes() const
-{
-  return vertex_data.size() / floats_per_vertex;
-}
+// int VertexDataTextured::GetNumVertexes() const
+// {
+//   return vertex_data.size();
+// }
 
 
 int VertexDataTextured::GetVAO() const
@@ -287,21 +312,37 @@ int VertexDataTextured::GetVAO() const
 }
 
 
-void VertexDataTextured::AttachAttribute(int attrib_id, int size, int offset, GLenum type)
+// void VertexDataTextured::AttachAttribute(int attrib_id, int size, int offset, GLenum type)
+// {
+//   const GLvoid *offset_ptr = reinterpret_cast<GLvoid *>(offset * sizeof(float));
+//   // glBindVertexArray(vao_id);
+//   // glBindBuffer(GL_ARRAY_BUFFER, buffer_id);
+//   glVertexAttribPointer(attrib_id, size, type, GL_FALSE, stride, offset_ptr);
+//   glEnableVertexAttribArray(attrib_id);
+//   //glBindVertexArray(0);
+//   //glBindBuffer(GL_ARRAY_BUFFER, 0);
+// }
+
+
+// void VertexDataTextured::DetachAttribute(int attrib_id)
+// {
+//   // glBindVertexArray(vao_id);
+//   glDisableVertexAttribArray(attrib_id);
+//   // glBindVertexArray(0);
+// }
+
+
+void VertexDataTextured::Draw() const
 {
-  const GLvoid *offset_ptr = reinterpret_cast<GLvoid *>(offset * sizeof(float));
-  // glBindVertexArray(vao_id);
-  // glBindBuffer(GL_ARRAY_BUFFER, buffer_id);
-  glVertexAttribPointer(attrib_id, size, type, GL_FALSE, stride, offset_ptr);
-  glEnableVertexAttribArray(attrib_id);
-  //glBindVertexArray(0);
-  //glBindBuffer(GL_ARRAY_BUFFER, 0);
+  glDrawArrays(primitive_type, 0, vertex_data.size());
 }
 
 
-void VertexDataTextured::DetachAttribute(int attrib_id)
+void VertexDataTextured::Flush()
 {
-  // glBindVertexArray(vao_id);
-  glDisableVertexAttribArray(attrib_id);
-  // glBindVertexArray(0);
+  UpdateVertexes();
+
+  Draw();
+
+  Clear();
 }

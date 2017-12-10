@@ -53,7 +53,7 @@ public:
   void Resize(int width, int height);
 
   void DrawVertexData(GLenum draw_type, const VertexDataBasic &vertex_data);
-  void DrawVertexData(GLenum draw_type, const VertexDataTextured &vertex_data, int unit);
+  void DrawVertexData(const VertexDataTextured &vertex_data, int unit);
 
   void Setup();
 

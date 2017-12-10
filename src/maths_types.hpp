@@ -1,5 +1,6 @@
 #pragma once
 
+#include <cstdint>
 
 struct vec2
 {
@@ -10,18 +11,21 @@ struct vec2
 
 struct vec3
 {
-    float x;
-    float y;
-    float z;
+  float x;
+  float y;
+  float z;
 };
 
 
 struct col4
 {
-    float r;
-    float g;
-    float b;
-    float a;
+  col4(float r, float g, float b, float a);
+  // col4(const std::string &hex);
+
+  uint8_t r;
+  uint8_t g;
+  uint8_t b;
+  uint8_t a;
 };
 
 

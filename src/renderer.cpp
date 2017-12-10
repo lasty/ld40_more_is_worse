@@ -16,8 +16,8 @@
 
 Renderer::Renderer()
 : lines_data(GL_DYNAMIC_DRAW)
-, particle_data(GL_DYNAMIC_DRAW)
-, text_data(GL_DYNAMIC_DRAW)
+, particle_data(GL_DYNAMIC_DRAW, GL_TRIANGLES)
+, text_data(GL_DYNAMIC_DRAW, GL_TRIANGLES)
 , white{1.0f, 1.0f, 1.0f, 1.0f}
 , grey{0.6f, 0.6f, 0.7f, 1.0f}
 , green{0.2f, 1.0f, 0.2f, 1.0f}
@@ -26,6 +26,9 @@ Renderer::Renderer()
 , font2("../data/fonts/small_0.png", "../data/fonts/small.fnt")
 {
   Setup();
+
+  std::cout << "White is " << white << std::endl;
+  std::cout << "Green is " << green << std::endl;
 
   GL::CheckError();
 }
@@ -101,7 +104,7 @@ void Renderer::DrawVertexData(GLenum draw_type, const VertexDataBasic &vertex_da
 }
 
 
-void Renderer::DrawVertexData(GLenum draw_type, const VertexDataTextured &vertex_data, int unit)
+void Renderer::DrawVertexData(const VertexDataTextured &vertex_data, int unit)
 {
   UseProgram(textured_shader.GetProgramId());
   UseVAO(vertex_data.GetVAO());
@@ -112,10 +115,7 @@ void Renderer::DrawVertexData(GLenum draw_type, const VertexDataTextured &vertex
   textured_shader.SetColour(1.0f, 1.0f, 1.0f, 1.0f);
   textured_shader.SetTexture(unit);
 
-  // glValidateProgram(textured_shader.GetProgramId());
-  // GL::CheckError();
-
-  glDrawArrays(draw_type, 0, vertex_data.GetNumVertexes());
+  vertex_data.Draw();
 }
 
 
@@ -420,7 +420,7 @@ void Renderer::RenderGame(const GameState &state)
   text_data.UpdateVertexes();
   glActiveTexture(GL_TEXTURE1);
   glBindTexture(GL_TEXTURE_2D, font2.tex.texture_id);
-  DrawVertexData(GL_TRIANGLES, text_data, 1);
+  DrawVertexData(text_data, 1);
 
 
   text_data.Clear();
@@ -442,7 +442,7 @@ void Renderer::RenderGame(const GameState &state)
 
   glActiveTexture(GL_TEXTURE0);
   glBindTexture(GL_TEXTURE_2D, font1.tex.texture_id);
-  DrawVertexData(GL_TRIANGLES, text_data, 0);
+  DrawVertexData(text_data, 0);
 
 
   text_data.Clear();
@@ -468,7 +468,7 @@ void Renderer::RenderGame(const GameState &state)
 
   glActiveTexture(GL_TEXTURE1);
   glBindTexture(GL_TEXTURE_2D, font2.tex.texture_id);
-  DrawVertexData(GL_TRIANGLES, text_data, 1);
+  DrawVertexData(text_data, 1);
 }
 
 

@@ -40,7 +40,7 @@ public:
   void SetZoom(float zoom);
 
   void SetColour(float r, float g, float b, float a);
-  void SetColour(col4 const& colour);
+  // void SetColour(col4 const& colour);
 
 
   int GetProgramId() const { return program_id; }
@@ -83,7 +83,7 @@ public:
   void SetZoom(float zoom);
 
   void SetColour(float r, float g, float b, float a);
-  void SetColour(col4 const& colour);
+  // void SetColour(col4 const& colour);
 
 
   int GetProgramId() const { return program_id; }
