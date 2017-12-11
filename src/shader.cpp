@@ -255,10 +255,10 @@ const std::string Textured::vertex_src =
 
 layout(location=0) in vec2 v;
 layout(location=1) in vec4 col;
-layout(location=2) in vec2 uv;
+layout(location=2) in vec3 uv;
 
 out vec4 vertex_colour;
-out vec2 uv_coords;
+out vec3 uv_coords;
 
 uniform ivec2 screen_resolution;
 
@@ -295,19 +295,19 @@ const std::string Textured::fragment_src =
   R"(#version 330
 
 uniform vec4 colour;
-uniform sampler2D tex_id;
+uniform sampler2DArray tex_id;
 
 in vec4 vertex_colour;
-in vec2 uv_coords;
+in vec3 uv_coords;
 out vec4 out_colour;
 
 void main(void)
 {
-  vec4 tex_colour = texture(tex_id, uv_coords / textureSize(tex_id, 0));
+  vec3 uv_floats = vec3(uv_coords.xy / textureSize(tex_id, 0).xy, uv_coords.z);
+  vec4 tex_colour = texture(tex_id, uv_floats);
 
   out_colour = tex_colour * colour * vertex_colour;
   //out_colour = vertex_colour;
-
 }
 
 )";

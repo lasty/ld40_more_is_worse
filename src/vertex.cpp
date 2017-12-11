@@ -16,6 +16,10 @@ void AttachAttribute(int attrib_id, size_t stride, size_t offset)
   {
     glVertexAttribPointer(attrib_id, 2, GL_FLOAT, GL_FALSE, stride, offset_ptr);
   }
+  else if constexpr (std::is_same<T, vec3>::value)
+  {
+    glVertexAttribPointer(attrib_id, 3, GL_FLOAT, GL_FALSE, stride, offset_ptr);
+  }
   else if constexpr (std::is_same<T, col4>::value)
   {
     glVertexAttribPointer(attrib_id, 4, GL_UNSIGNED_BYTE, GL_TRUE, stride, offset_ptr);
@@ -218,9 +222,6 @@ VertexDataTextured::VertexDataTextured(GLenum usage, GLenum primitive_type)
   glBindVertexArray(vao_id);
   glBindBuffer(GL_ARRAY_BUFFER, buffer_id);
 
-  // AttachAttribute(0, 2, 0, GL_FLOAT); //position location = 0
-  // AttachAttribute(1, 4, 2, GL_FLOAT); //colour, location = 1
-  // AttachAttribute(2, 2, 6, GL_FLOAT); //uv, location = 2
   ATTACH_ATTRIBUTE(0, Vertex, position);
   ATTACH_ATTRIBUTE(1, Vertex, colour);
   ATTACH_ATTRIBUTE(2, Vertex, uv);
@@ -236,9 +237,9 @@ VertexDataTextured::~VertexDataTextured()
 {
   glBindVertexArray(vao_id);
 
-  DetachAttribute(0); //position location = 0
-  DetachAttribute(1); //colour, location = 1
-  DetachAttribute(2); //uv, location = 2
+  DetachAttribute(0);
+  DetachAttribute(1);
+  DetachAttribute(2);
 
   GL::DeleteBuffers(buffer_id);
 
@@ -259,29 +260,30 @@ void VertexDataTextured::AddVertex(const Vertex &v)
 }
 
 
-void VertexDataTextured::AddVertex(const vec2 &position, const vec2 &uv, const col4 &colour)
+void VertexDataTextured::AddVertex(const vec2 &position, const vec3 &uv, const col4 &colour)
 {
   vertex_data.push_back({position, colour, uv});
 }
 
 
-void VertexDataTextured::DrawQuad(vec2 pos1, vec2 uv1, vec2 pos2, vec2 uv2)
-{
-  const col4 white{1.0f, 1.0f, 1.0f, 1.0f};
-  return DrawQuad(pos1, uv1, pos2, uv2, white);
-}
+// void VertexDataTextured::DrawQuad(vec2 pos1, vec2 uv1, vec2 pos2, vec2 uv2)
+// {
+//   const col4 white{1.0f, 1.0f, 1.0f, 1.0f};
+//   return DrawQuad(pos1, uv1, pos2, uv2, white);
+// }
 
-void VertexDataTextured::DrawQuad(vec2 pos1, vec2 uv1, vec2 pos2, vec2 uv2, col4 colour)
+
+void VertexDataTextured::DrawQuad(vec2 pos1, vec2 uv1, vec2 pos2, vec2 uv2, col4 colour, int layer)
 {
   vec2 tl{pos1.x, pos1.y};
   vec2 tr{pos2.x, pos1.y};
   vec2 bl{pos1.x, pos2.y};
   vec2 br{pos2.x, pos2.y};
 
-  vec2 tl_uv{uv1.x, uv1.y};
-  vec2 tr_uv{uv2.x, uv1.y};
-  vec2 bl_uv{uv1.x, uv2.y};
-  vec2 br_uv{uv2.x, uv2.y};
+  vec3 tl_uv{uv1.x, uv1.y, float(layer)};
+  vec3 tr_uv{uv2.x, uv1.y, float(layer)};
+  vec3 bl_uv{uv1.x, uv2.y, float(layer)};
+  vec3 br_uv{uv2.x, uv2.y, float(layer)};
 
   AddVertex(tl, tl_uv, colour);
   AddVertex(bl, bl_uv, colour);

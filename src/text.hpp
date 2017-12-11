@@ -23,7 +23,7 @@ struct glyph
 class Text
 {
 public:
-  Texture tex;
+  //Texture tex;
   int layer;
 
   std::map<char, glyph> glyphs;

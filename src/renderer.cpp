@@ -24,11 +24,11 @@ Renderer::Renderer()
 , red{0.9f, 0.1f, 0.2f, 1.0f}
 , font1("../data/fonts/mono_0.png", "../data/fonts/mono.fnt", 0)
 , font2("../data/fonts/small_0.png", "../data/fonts/small.fnt", 1)
+, font_texture_array(256, 256, 2)
 {
-  Setup();
 
-  std::cout << "White is " << white << std::endl;
-  std::cout << "Green is " << green << std::endl;
+  font_texture_array.LoadLayer(0, "../data/fonts/mono_0.png");
+  font_texture_array.LoadLayer(1, "../data/fonts/small_0.png");
 
   GL::CheckError();
 }
@@ -36,12 +36,6 @@ Renderer::Renderer()
 
 Renderer::~Renderer()
 {
-}
-
-
-void Renderer::Setup()
-{
-  //Load textures here
 }
 
 
@@ -421,13 +415,13 @@ void Renderer::RenderGame(const GameState &state)
   lines_data.UpdateVertexes();
   DrawVertexData(GL_LINES, lines_data);
 
-  text_data.UpdateVertexes();
-  glActiveTexture(GL_TEXTURE1);
-  glBindTexture(GL_TEXTURE_2D, font2.tex.texture_id);
-  DrawVertexData(text_data, 1);
+  // text_data.UpdateVertexes();
+  // glActiveTexture(GL_TEXTURE0);
+  // glBindTexture(GL_TEXTURE_2D_ARRAY, font_texture_array.texture_id);
+  // DrawVertexData(text_data, 0);
 
 
-  text_data.Clear();
+  // text_data.Clear();
 
   vec2 mode_position{10.0f, 700.0f};
   vec2 mode_line2{10.0f, 730.0f};
@@ -442,14 +436,14 @@ void Renderer::RenderGame(const GameState &state)
   }
 
 
-  text_data.UpdateVertexes();
+  // text_data.UpdateVertexes();
 
-  glActiveTexture(GL_TEXTURE0);
-  glBindTexture(GL_TEXTURE_2D, font1.tex.texture_id);
-  DrawVertexData(text_data, 0);
+  // glActiveTexture(GL_TEXTURE0);
+  // glBindTexture(GL_TEXTURE_2D_ARRAY, font_texture_array.texture_id);
+  // DrawVertexData(text_data, 0);
 
 
-  text_data.Clear();
+  // text_data.Clear();
   if (state.drop_mode)
   {
     RenderText(font2, "Press inventory key to drop items", mode_line2, grey);
@@ -470,9 +464,9 @@ void Renderer::RenderGame(const GameState &state)
 
   text_data.UpdateVertexes();
 
-  glActiveTexture(GL_TEXTURE1);
-  glBindTexture(GL_TEXTURE_2D, font2.tex.texture_id);
-  DrawVertexData(text_data, 1);
+  glActiveTexture(GL_TEXTURE0);
+  glBindTexture(GL_TEXTURE_2D_ARRAY, font_texture_array.texture_id);
+  DrawVertexData(text_data, 0);
 }
 
 

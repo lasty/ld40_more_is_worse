@@ -46,8 +46,8 @@ int parse(std::string line, std::string key)
 
 
 Text::Text(std::string texture_filename, std::string font_filename, int layer)
-: tex(texture_filename)
-, layer(layer)
+//: tex(texture_filename)
+: layer(layer)
 {
   //Parse font metadata
 
@@ -110,7 +110,7 @@ void Text::RenderGlyph(VertexDataTextured &vertex_data, glyph g, vec2 pos, const
   vec2 uv1{float(g.x), float(g.y)};
   vec2 uv2{float(g.x + g.width), float(g.y + g.height)};
 
-  vertex_data.DrawQuad(pos1, uv1, pos2, uv2, colour);
+  vertex_data.DrawQuad(pos1, uv1, pos2, uv2, colour, layer);
 }
 
 
