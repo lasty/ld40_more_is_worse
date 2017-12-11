@@ -16,19 +16,23 @@
 
 Renderer::Renderer()
 : lines_data(GL_DYNAMIC_DRAW)
-, particle_data(GL_DYNAMIC_DRAW, GL_TRIANGLES)
-, text_data(GL_DYNAMIC_DRAW, GL_TRIANGLES)
+// , particle_data(GL_DYNAMIC_DRAW, GL_TRIANGLES)
 , white{1.0f, 1.0f, 1.0f, 1.0f}
 , grey{0.6f, 0.6f, 0.7f, 1.0f}
 , green{0.2f, 1.0f, 0.2f, 1.0f}
 , red{0.9f, 0.1f, 0.2f, 1.0f}
 , font1("../data/fonts/mono_0.png", "../data/fonts/mono.fnt", 0)
 , font2("../data/fonts/small_0.png", "../data/fonts/small.fnt", 1)
+, text_data(GL_DYNAMIC_DRAW, GL_TRIANGLES)
 , font_texture_array(256, 256, 2)
+, sprite_vertexes(GL_DYNAMIC_DRAW, GL_TRIANGLES)
+, sprite_texture_array(512, 512, 1)
 {
 
   font_texture_array.LoadLayer(0, "../data/fonts/mono_0.png");
   font_texture_array.LoadLayer(1, "../data/fonts/small_0.png");
+
+  sprite_texture_array.LoadLayer(0, "../data/images/items1.xcf");
 
   GL::CheckError();
 }
@@ -113,9 +117,21 @@ void Renderer::DrawVertexData(const VertexDataTextured &vertex_data, int unit)
 }
 
 
-vec2 Renderer::RenderText(const Text &font, const std::string str, vec2 pos, col4 colour)
+vec2 Renderer::RenderText(const Text &font, const std::string &str, const vec2 &pos, const col4 &colour)
 {
   return font.RenderString(text_data, str, pos, colour);
+}
+
+
+void Renderer::RenderSprite(const Sprite &sprite, const vec2 &pos, const col4 &colour)
+{
+  vec2 pos1{pos.x - (sprite.width / 2.0f), pos.y - (sprite.height / 2.0f)};
+  vec2 pos2{pos1.x + sprite.width, pos1.y + sprite.height};
+
+  vec2 uv1{float(sprite.x), float(sprite.y)};
+  vec2 uv2{float(sprite.x + sprite.width), float(sprite.y + sprite.height)};
+
+  sprite_vertexes.DrawQuad(pos1, uv1, pos2, uv2, colour, sprite.layer);
 }
 
 
@@ -145,6 +161,21 @@ void Renderer::RenderPlayer(const Player &player)
 void Renderer::RenderItem(const Item &item, bool colliding, bool moused_over)
 {
   lines_data.DrawCircle(item.position, item.radius, item.colour);
+
+  switch (item.type)
+  {
+    case Item_Type::gun:
+      RenderSprite(sprite_factory.GetSprite("gun"), item.position, item.colour);
+      break;
+
+    case Item_Type::health:
+      RenderSprite(sprite_factory.GetSprite("healthkit"), item.position, item.colour);
+      break;
+
+    case Item_Type::command:
+    case Item_Type::none:
+      break;
+  }
 
   if (colliding)
   {
@@ -376,7 +407,7 @@ void Renderer::RenderGame(const GameState &state)
 
   lines_data.Clear();
   text_data.Clear();
-
+  sprite_vertexes.Clear();
 
   for (auto &item : state.world_items)
   {
@@ -410,6 +441,12 @@ void Renderer::RenderGame(const GameState &state)
 
 
   RenderPlayer(state.player);
+
+
+  sprite_vertexes.UpdateVertexes();
+  glActiveTexture(GL_TEXTURE1);
+  glBindTexture(GL_TEXTURE_2D_ARRAY, sprite_texture_array.texture_id);
+  DrawVertexData(sprite_vertexes, 1);
 
 
   lines_data.UpdateVertexes();

@@ -5,6 +5,7 @@
 
 #include "game.hpp"
 #include "shader.hpp"
+#include "sprites.hpp"
 #include "text.hpp"
 #include "texture.hpp"
 #include "vertex.hpp"
@@ -27,9 +28,7 @@ private:
   Shader::Textured textured_shader;
 
   VertexDataBasic lines_data;
-  VertexDataTextured particle_data;
-
-  VertexDataTextured text_data;
+  // VertexDataTextured particle_data;
 
   float oscilate = 0.0f;
 
@@ -38,11 +37,15 @@ private:
   col4 green;
   col4 red;
 
-
   Text font1;
   Text font2;
 
+  VertexDataTextured text_data;
   ArrayTexture font_texture_array;
+
+  VertexDataTextured sprite_vertexes;
+  ArrayTexture sprite_texture_array;
+  SpriteFactory sprite_factory;
 
 public:
   Renderer();
@@ -58,7 +61,8 @@ public:
   void DrawVertexData(GLenum draw_type, const VertexDataBasic &vertex_data);
   void DrawVertexData(const VertexDataTextured &vertex_data, int unit);
 
-  vec2 RenderText(const Text &font, const std::string str, vec2 pos, col4 colour);
+  vec2 RenderText(const Text &font, const std::string &str, const vec2 &pos, const col4 &colour);
+  void RenderSprite(const Sprite &sprite, const vec2 &pos, const col4 &colour);
 
 
   void RenderPlayer(const Player &player);

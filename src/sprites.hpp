@@ -9,8 +9,9 @@ struct Sprite
 {
   int x;
   int y;
-  int w;
-  int h;
+  int width;
+  int height;
+  int layer;
 };
 
 

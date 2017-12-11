@@ -89,11 +89,11 @@ void ArrayTexture::LoadLayer(int layer, std::string filename)
   SDL_Surface *surf = IMG_Load(filename.c_str());
   if (not surf) throw std::runtime_error("Could not load image");
 
-  assert(surf->w == width);
-  assert(surf->h == height);
-
   std::cout << "width " << surf->w << "  height " << surf->h << "  layer " << layer << std::endl;
   std::cout << "Bytes per pixel " << (int)surf->format->BytesPerPixel << std::endl;
+
+  assert(surf->w == width);
+  assert(surf->h == height);
 
   int format = surf->format->BytesPerPixel == 4 ? GL_RGBA : GL_RGB;
 
