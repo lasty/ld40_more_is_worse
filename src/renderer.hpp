@@ -38,6 +38,7 @@ private:
   col4 green;
   col4 red;
 
+
   Text font1;
   Text font2;
 
@@ -56,6 +57,9 @@ public:
   void DrawVertexData(const VertexDataTextured &vertex_data, int unit);
 
   void Setup();
+
+  vec2 RenderText(const Text &font, const std::string str, vec2 pos, col4 colour);
+
 
   void RenderPlayer(const Player &player);
 

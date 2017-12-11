@@ -22,8 +22,8 @@ Renderer::Renderer()
 , grey{0.6f, 0.6f, 0.7f, 1.0f}
 , green{0.2f, 1.0f, 0.2f, 1.0f}
 , red{0.9f, 0.1f, 0.2f, 1.0f}
-, font1("../data/fonts/mono_0.png", "../data/fonts/mono.fnt")
-, font2("../data/fonts/small_0.png", "../data/fonts/small.fnt")
+, font1("../data/fonts/mono_0.png", "../data/fonts/mono.fnt", 0)
+, font2("../data/fonts/small_0.png", "../data/fonts/small.fnt", 1)
 {
   Setup();
 
@@ -119,6 +119,12 @@ void Renderer::DrawVertexData(const VertexDataTextured &vertex_data, int unit)
 }
 
 
+vec2 Renderer::RenderText(const Text &font, const std::string str, vec2 pos, col4 colour)
+{
+  return font.RenderString(text_data, str, pos, colour);
+}
+
+
 std::string GetHealthText(const Health &health)
 {
   std::stringstream ss;
@@ -136,9 +142,9 @@ void Renderer::RenderPlayer(const Player &player)
   lines_data.DrawCircle(facing_circle, player.radius / 4.0f, green);
 
   vec2 label_pos = player.position + vec2{-20.0f, player.radius};
-  font2.RenderString(text_data, "Player", label_pos);
+  RenderText(font2, "Player", label_pos, white);
   label_pos.y += 20;
-  font2.RenderString(text_data, GetHealthText(player.health), label_pos, green);
+  RenderText(font2, GetHealthText(player.health), label_pos, green);
 }
 
 
@@ -159,7 +165,7 @@ void Renderer::RenderItem(const Item &item, bool colliding, bool moused_over)
   }
   else
   {
-    font2.RenderString(text_data, item.name, item.position + vec2{-20.0f, item.radius}, grey);
+    RenderText(font2, item.name, item.position + vec2{-20.0f, item.radius}, grey);
   }
 }
 
@@ -209,18 +215,18 @@ void Renderer::RenderItemInfoCard(const Item &item, const vec2 &mouse_pos)
   col4 tan{0.8f, 0.6f, 0.2f, 1.0f};
 
 
-  font2.RenderString(text_data, item.name, infocard_pos, white);
+  RenderText(font2, item.name, infocard_pos, white);
   infocard_pos.y += 20;
 
   switch (item.type)
   {
     case Item_Type::health:
     {
-      font2.RenderString(text_data, "Health item", infocard_pos, red);
+      RenderText(font2, "Health item", infocard_pos, red);
       infocard_pos.y += 20;
       std::stringstream ss;
       ss << item.healing_amount << " healing amount";
-      font2.RenderString(text_data, ss.str(), infocard_pos, grey);
+      RenderText(font2, ss.str(), infocard_pos, grey);
       infocard_pos.y += 20;
     }
     break;
@@ -228,37 +234,37 @@ void Renderer::RenderItemInfoCard(const Item &item, const vec2 &mouse_pos)
 
     case Item_Type::gun:
     {
-      font2.RenderString(text_data, "Projectile Weapon", infocard_pos, tan);
+      RenderText(font2, "Projectile Weapon", infocard_pos, tan);
       infocard_pos.y += 20;
       std::stringstream ss;
       ss << item.projectile_damage << " damage";
-      font2.RenderString(text_data, ss.str(), infocard_pos, grey);
+      RenderText(font2, ss.str(), infocard_pos, grey);
       infocard_pos.y += 20;
     }
     break;
 
     case Item_Type::command:
-      font2.RenderString(text_data, "[Command]", infocard_pos, grey);
+      RenderText(font2, "[Command]", infocard_pos, grey);
       infocard_pos.y += 20;
       break;
 
     case Item_Type::none:
-      font2.RenderString(text_data, "[None]", infocard_pos, grey);
+      RenderText(font2, "[None]", infocard_pos, grey);
       infocard_pos.y += 20;
       break;
   }
 
   if (item.has_limited_uses)
   {
-    vec2 pos2 = font2.RenderString(text_data, "Limited uses: ", infocard_pos, grey);
-    pos2 = font2.RenderString(text_data, GetLimitedUsesText(item, false), pos2, green);
+    vec2 pos2 = RenderText(font2, "Limited uses: ", infocard_pos, grey);
+    pos2 = RenderText(font2, GetLimitedUsesText(item, false), pos2, green);
     infocard_pos.y += 20;
   }
 
   if (item.has_cooldown)
   {
-    vec2 pos2 = font2.RenderString(text_data, "Cooldown: ", infocard_pos, grey);
-    font2.RenderString(text_data, GetCooldownText(item, false), pos2, green);
+    vec2 pos2 = RenderText(font2, "Cooldown: ", infocard_pos, grey);
+    RenderText(font2, GetCooldownText(item, false), pos2, green);
     infocard_pos.y += 20;
   }
 
@@ -293,7 +299,7 @@ void Renderer::RenderMonster(const Monster &monster, bool moused_over)
   }
   else
   {
-    font2.RenderString(text_data, monster.name, monster.position + vec2{-20.0f, monster.radius}, grey);
+    RenderText(font2, monster.name, monster.position + vec2{-20.0f, monster.radius}, grey);
   }
 }
 
@@ -302,24 +308,24 @@ void Renderer::RenderMonsterInfoCard(const Monster &monster, const vec2 &mouse_p
 {
   vec2 infocard_pos = mouse_pos + vec2{10.0f, 20.0f};
 
-  font2.RenderString(text_data, monster.name, infocard_pos, white);
+  RenderText(font2, monster.name, infocard_pos, white);
   infocard_pos.y += 20;
 
 
   switch (monster.type)
   {
     case Monster_Type::dummy:
-      font2.RenderString(text_data, "Dummy", infocard_pos, red);
+      RenderText(font2, "Dummy", infocard_pos, red);
       infocard_pos.y += 20;
       break;
 
     case Monster_Type::melee:
-      font2.RenderString(text_data, "Melee", infocard_pos, red);
+      RenderText(font2, "Melee", infocard_pos, red);
       infocard_pos.y += 20;
       break;
 
     case Monster_Type::shooter:
-      font2.RenderString(text_data, "Shooter", infocard_pos, red);
+      RenderText(font2, "Shooter", infocard_pos, red);
       infocard_pos.y += 20;
       break;
 
@@ -327,8 +333,8 @@ void Renderer::RenderMonsterInfoCard(const Monster &monster, const vec2 &mouse_p
       break;
   }
 
-  vec2 pos2 = font2.RenderString(text_data, "Health ", infocard_pos, grey);
-  font2.RenderString(text_data, GetHealthText(monster.health), pos2, green);
+  vec2 pos2 = RenderText(font2, "Health ", infocard_pos, grey);
+  RenderText(font2, GetHealthText(monster.health), pos2, green);
   infocard_pos.y += 20;
 }
 
@@ -343,7 +349,7 @@ void Renderer::RenderInventory(std::map<int, Item> inventory)
 {
   vec2 pos{10.0f, 30.0f};
 
-  font2.RenderString(text_data, "Inventory: ", pos, white);
+  RenderText(font2, "Inventory: ", pos, white);
   pos.y += 20.0f;
 
   for (auto & [ key, item ] : inventory)
@@ -351,16 +357,16 @@ void Renderer::RenderInventory(std::map<int, Item> inventory)
     std::stringstream ss_item;
     ss_item << GetInputName(key) << ": " << item.name;
 
-    vec2 pos2 = font2.RenderString(text_data, ss_item.str(), pos, grey);
+    vec2 pos2 = RenderText(font2, ss_item.str(), pos, grey);
 
     if (item.has_limited_uses)
     {
-      pos2 = font2.RenderString(text_data, GetLimitedUsesText(item, true), pos2, red);
+      pos2 = RenderText(font2, GetLimitedUsesText(item, true), pos2, red);
     }
 
     if (item.has_cooldown and item.cooldown > 0.0f)
     {
-      font2.RenderString(text_data, GetCooldownText(item, true), pos2, green);
+      RenderText(font2, GetCooldownText(item, true), pos2, green);
     }
 
     pos.y += 20.0f;
@@ -376,8 +382,6 @@ void Renderer::RenderGame(const GameState &state)
 
   lines_data.Clear();
   text_data.Clear();
-  font1.SetColour(white);
-  font2.SetColour(white);
 
 
   for (auto &item : state.world_items)
@@ -430,11 +434,11 @@ void Renderer::RenderGame(const GameState &state)
 
   if (state.drop_mode)
   {
-    font1.RenderString(text_data, "Drop Mode", mode_position, white);
+    RenderText(font1, "Drop Mode", mode_position, white);
   }
   else
   {
-    font1.RenderString(text_data, "Normal Mode", mode_position, white);
+    RenderText(font1, "Normal Mode", mode_position, white);
   }
 
 
@@ -448,17 +452,17 @@ void Renderer::RenderGame(const GameState &state)
   text_data.Clear();
   if (state.drop_mode)
   {
-    font2.RenderString(text_data, "Press inventory key to drop items", mode_line2, grey);
+    RenderText(font2, "Press inventory key to drop items", mode_line2, grey);
   }
   else
   {
     if (state.closest_item)
     {
-      font2.RenderString(text_data, "Press a new key to pick up this item", mode_line2, grey);
+      RenderText(font2, "Press a new key to pick up this item", mode_line2, grey);
     }
     else
     {
-      font2.RenderString(text_data, "Move to item to pick up, or press item's key to activate", mode_line2, grey);
+      RenderText(font2, "Move to item to pick up, or press item's key to activate", mode_line2, grey);
     }
   }
 

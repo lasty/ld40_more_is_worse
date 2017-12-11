@@ -45,8 +45,9 @@ int parse(std::string line, std::string key)
 }
 
 
-Text::Text(std::string texture_filename, std::string font_filename)
+Text::Text(std::string texture_filename, std::string font_filename, int layer)
 : tex(texture_filename)
+, layer(layer)
 {
   //Parse font metadata
 
@@ -101,7 +102,7 @@ void Text::ParseChar(std::string line)
 }
 
 
-void Text::RenderGlyph(VertexDataTextured &vertex_data, glyph g, vec2 pos)
+void Text::RenderGlyph(VertexDataTextured &vertex_data, glyph g, vec2 pos, const col4 &colour) const
 {
   vec2 pos1{pos.x + g.xoffset, pos.y + g.yoffset};
   vec2 pos2{pos1.x + g.width, pos1.y + g.height};
@@ -109,11 +110,11 @@ void Text::RenderGlyph(VertexDataTextured &vertex_data, glyph g, vec2 pos)
   vec2 uv1{float(g.x), float(g.y)};
   vec2 uv2{float(g.x + g.width), float(g.y + g.height)};
 
-  vertex_data.DrawQuad(pos1, uv1, pos2, uv2, current_colour);
+  vertex_data.DrawQuad(pos1, uv1, pos2, uv2, colour);
 }
 
 
-vec2 Text::RenderString(VertexDataTextured &vertex_data, const std::string str, vec2 pos)
+vec2 Text::RenderString(VertexDataTextured &vertex_data, const std::string str, vec2 pos, col4 colour) const
 {
   for (char ch : str)
   {
@@ -126,23 +127,10 @@ vec2 Text::RenderString(VertexDataTextured &vertex_data, const std::string str, 
 
     glyph g = it->second;
 
-    RenderGlyph(vertex_data, g, pos);
+    RenderGlyph(vertex_data, g, pos, colour);
 
     pos.x += g.xadvance;
   }
 
   return pos;
-}
-
-
-vec2 Text::RenderString(VertexDataTextured &vertex_data, const std::string str, vec2 pos, col4 colour)
-{
-  SetColour(colour);
-  return RenderString(vertex_data, str, pos);
-}
-
-
-void Text::SetColour(col4 new_colour)
-{
-  current_colour = new_colour;
 }
