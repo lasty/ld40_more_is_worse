@@ -84,6 +84,7 @@ void main_game()
   SDL_GL_SetAttribute(SDL_GL_CONTEXT_MAJOR_VERSION, GL_MAJOR);
   SDL_GL_SetAttribute(SDL_GL_CONTEXT_MINOR_VERSION, GL_MINOR);
   SDL_GL_SetAttribute(SDL_GL_CONTEXT_FLAGS, SDL_GL_CONTEXT_DEBUG_FLAG);
+  SDL_GL_SetAttribute(SDL_GL_CONTEXT_PROFILE_MASK, SDL_GL_CONTEXT_PROFILE_CORE);
 
   std::cout << "Requestiong OpenGL Context version " << GL_MAJOR << "." << GL_MINOR
             << std::endl;
@@ -111,7 +112,23 @@ void main_game()
   int gl_version_maj = GL::GetInteger(GL_MAJOR_VERSION);
   int gl_version_min = GL::GetInteger(GL_MINOR_VERSION);
 
+
   std::cout << "GL Version: " << gl_version_maj << "." << gl_version_min << std::endl;
+
+  int profile = 0;
+  SDL_GL_GetAttribute(SDL_GL_CONTEXT_PROFILE_MASK, &profile);
+
+  std::cout << "GL Profile: ";
+  if (profile == SDL_GL_CONTEXT_PROFILE_COMPATIBILITY)
+    std::cout << "COMPATABILITY";
+  else if (profile == SDL_GL_CONTEXT_PROFILE_CORE)
+    std::cout << "CORE";
+  else if (profile == SDL_GL_CONTEXT_PROFILE_ES)
+    std::cout << "ES";
+  else
+    std::cout << "(Unknown/Default?)";
+  std::cout << std::endl;
+
 
   GL::Debuging(true);
 
