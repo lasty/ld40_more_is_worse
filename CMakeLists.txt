@@ -34,6 +34,7 @@ add_executable(ld40 WIN32
   src/sprites.cpp
   src/text.cpp
   src/texture.cpp
+  src/texture_xcf.cpp
   src/to_string.cpp
   src/utils.cpp
   src/vertex.cpp)

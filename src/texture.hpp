@@ -29,5 +29,7 @@ public:
   ArrayTexture(int width, int height, int layers);
   ~ArrayTexture();
 
+  void LoadLayerSurface(int layer, struct SDL_Surface *surf);
   void LoadLayer(int layer, std::string filename);
+  void LoadLayersXCF(int layer_count, std::string filename);
 };

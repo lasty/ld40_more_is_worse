@@ -26,13 +26,13 @@ Renderer::Renderer()
 , text_data(GL_DYNAMIC_DRAW, GL_TRIANGLES)
 , font_texture_array(256, 256, 2)
 , sprite_vertexes(GL_DYNAMIC_DRAW, GL_TRIANGLES)
-, sprite_texture_array(512, 512, 1)
+, sprite_texture_array(512, 512, 4)
 {
 
   font_texture_array.LoadLayer(0, "../data/fonts/mono_0.png");
   font_texture_array.LoadLayer(1, "../data/fonts/small_0.png");
 
-  sprite_texture_array.LoadLayer(0, "../data/images/items1.xcf");
+  sprite_texture_array.LoadLayersXCF(4, "../data/images/items1.xcf");
 
   GL::CheckError();
 }
@@ -169,7 +169,8 @@ void Renderer::RenderItem(const Item &item, bool colliding, bool moused_over)
       break;
 
     case Item_Type::health:
-      RenderSprite(sprite_factory.GetSprite("healthkit"), item.position, item.colour);
+      RenderSprite(sprite_factory.GetSprite("healthkit_base"), item.position, white);
+      RenderSprite(sprite_factory.GetSprite("healthkit_top"), item.position, item.colour);
       break;
 
     case Item_Type::command:
