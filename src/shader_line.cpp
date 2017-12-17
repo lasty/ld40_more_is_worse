@@ -66,7 +66,7 @@ void main(void)
 
 namespace Shader {
 
-Line::LineVertexArray::LineVertexArray()
+Line::VertexArray::VertexArray()
 {
   buffer_id = GL::CreateBuffers();
   vao_id = GL::CreateVertexArrays();
@@ -81,7 +81,7 @@ Line::LineVertexArray::LineVertexArray()
 }
 
 
-Line::LineVertexArray::~LineVertexArray()
+Line::VertexArray::~VertexArray()
 {
   glBindVertexArray(vao_id);
 
@@ -95,20 +95,20 @@ Line::LineVertexArray::~LineVertexArray()
 }
 
 
-void Line::LineVertexArray::Update()
+void Line::VertexArray::Update()
 {
   glBindBuffer(GL_ARRAY_BUFFER, buffer_id);
   glBufferData(GL_ARRAY_BUFFER, sizeof(Vertex) * size(), data(), GL_DYNAMIC_DRAW);
 }
 
 
-void Line::LineVertexArray::Line(const vec2 &p1, const col4 &c1, const vec2 &p2, const col4 &c2)
+void Line::VertexArray::Line(const vec2 &p1, const col4 &c1, const vec2 &p2, const col4 &c2)
 {
   push_back({p1, c1});
   push_back({p2, c2});
 }
 
-void Line::LineVertexArray::Circle(const vec2 &position, float radius, const col4 &colour)
+void Line::VertexArray::Circle(const vec2 &position, float radius, const col4 &colour)
 {
   int segments = 32;
   for (int i = 0; i < segments; i++)
@@ -126,7 +126,7 @@ void Line::LineVertexArray::Circle(const vec2 &position, float radius, const col
 }
 
 
-void Line::LineVertexArray::Rect(vec2 position, vec2 size, col4 colour)
+void Line::VertexArray::Rect(vec2 position, vec2 size, col4 colour)
 {
   vec2 tl{position.x, position.y};
   vec2 tr{position.x + size.x, position.y};
@@ -167,7 +167,7 @@ Line::Line()
   //Set some sane defaults
   SetResolution(1280, 768);
   SetColour({1.0f, 1.0f, 1.0f, 1.0f});
-  SetOffset(0.0f, 0.0f);
+  SetOffset({0.0f, 0.0f});
   SetRotation(0.0f);
   SetZoom(1.0f);
 }
@@ -188,12 +188,6 @@ Line::~Line()
 void Line::SetResolution(int width, int height)
 {
   glProgramUniform2i(program_id, uniforms.screen_resolution, width, height);
-}
-
-
-void Line::SetOffset(int x, int y)
-{
-  glProgramUniform2f(program_id, uniforms.offset, x, y);
 }
 
 
@@ -226,13 +220,7 @@ void Line::SetColour(col4 const &colour)
 }
 
 
-void Line::Update(LineVertexArray &array)
-{
-  array.Update();
-}
-
-
-void Line::Render(LineVertexArray &array)
+void Line::Render(VertexArray &array)
 {
   glUseProgram(program_id);
   glBindVertexArray(array.vao_id);

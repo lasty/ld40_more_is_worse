@@ -101,7 +101,7 @@ void Text::ParseChar(std::string line)
 }
 
 
-void Text::RenderGlyph(VertexDataTextured &vertex_data, glyph g, vec2 pos, const col4 &colour) const
+void Text::RenderGlyph(Shader::Textured::VertexArray &vertex_data, glyph g, vec2 pos, const col4 &colour) const
 {
   vec2 pos1{pos.x + g.xoffset, pos.y + g.yoffset};
   vec2 pos2{pos1.x + g.width, pos1.y + g.height};
@@ -113,7 +113,7 @@ void Text::RenderGlyph(VertexDataTextured &vertex_data, glyph g, vec2 pos, const
 }
 
 
-vec2 Text::RenderString(VertexDataTextured &vertex_data, const std::string str, vec2 pos, col4 colour) const
+vec2 Text::RenderString(Shader::Textured::VertexArray &vertex_data, const std::string str, vec2 pos, col4 colour) const
 {
   for (char ch : str)
   {

@@ -1,6 +1,6 @@
 #pragma once
 
-#include <string>
+#include <vector>
 
 #include "maths_types.hpp"
 
@@ -8,10 +8,32 @@ namespace Shader {
 
 class Textured
 {
+public:
+  struct Vertex
+  {
+    vec2 position;
+    col4 colour;
+    vec3 uv;
+  };
 
-private:
-  static const std::string vertex_src;
-  static const std::string fragment_src;
+  class VertexArray : public std::vector<Vertex>
+  {
+  public:
+    VertexArray();
+    ~VertexArray();
+
+  private:
+    friend class Textured;
+    int buffer_id = 0;
+    int vao_id = 0;
+
+  public:
+    void AddVertex(const Vertex &v);
+    void AddVertex(const vec2 &position, const vec3 &uv, const col4 &colour);
+    void DrawQuad(vec2 pos1, vec2 uv1, vec2 pos2, vec2 uv2, col4 colour, int layer);
+
+    void Update();
+  };
 
   int program_id = 0;
   int vertex_shader_id = 0;
@@ -33,22 +55,16 @@ public:
   ~Textured();
 
   void SetResolution(int width, int height);
-
-  void SetOffset(int x, int y);
-  void SetOffset(vec2 const& offset);
-
+  void SetOffset(vec2 const &offset);
   void SetRotation(float rot);
-
   void SetZoom(float zoom);
-
-  void SetColour(float r, float g, float b, float a);
-  // void SetColour(col4 const& colour);
-
+  void SetColour(col4 const &colour);
 
   int GetProgramId() const { return program_id; }
 
   void SetTexture(int tex_unit);
 
+  void Render(VertexArray &array);
 };
 
 

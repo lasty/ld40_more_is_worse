@@ -17,7 +17,7 @@ public:
     col4 colour;
   };
 
-  class LineVertexArray : public std::vector<Vertex>
+  class VertexArray : public std::vector<Vertex>
   {
     private:
     friend class Line;
@@ -25,9 +25,9 @@ public:
     int vao_id;
 
     public:
-    LineVertexArray();
-    ~LineVertexArray();
-    LineVertexArray(LineVertexArray &copy) = delete;
+    VertexArray();
+    ~VertexArray();
+    VertexArray(VertexArray &copy) = delete;
 
     void Update();
 
@@ -56,21 +56,13 @@ public:
   ~Line();
 
   void SetResolution(int width, int height);
-
-  void SetOffset(int x, int y);
   void SetOffset(vec2 const &offset);
-
   void SetRotation(float rot);
-
   void SetZoom(float zoom);
-
   void SetColour(col4 const &colour);
 
 
-  int GetProgramId() const { return program_id; }
-
-  void Update(LineVertexArray &array);
-  void Render(LineVertexArray &array);
+  void Render(VertexArray &array);
 
 };
 

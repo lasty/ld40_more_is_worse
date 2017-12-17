@@ -37,8 +37,7 @@ add_executable(ld40 WIN32
   src/texture.cpp
   src/texture_xcf.cpp
   src/to_string.cpp
-  src/utils.cpp
-  src/vertex.cpp)
+  src/utils.cpp)
 
 
 target_compile_options(ld40 PUBLIC "-std=gnu++1z")

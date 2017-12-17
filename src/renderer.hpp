@@ -9,7 +9,6 @@
 #include "sprites.hpp"
 #include "text.hpp"
 #include "texture.hpp"
-#include "vertex.hpp"
 
 
 struct GLState
@@ -25,11 +24,12 @@ class Renderer
 private:
   GLState gl_state;
 
-  Shader::Textured textured_shader;
-
-
   Shader::Line line_shader;
-  Shader::Line::LineVertexArray lines1;
+  Shader::Line::VertexArray lines1;
+
+  Shader::Textured textured_shader;
+  Shader::Textured::VertexArray text_data;
+  Shader::Textured::VertexArray sprite_vertexes;
 
   float oscilate = 0.0f;
 
@@ -41,11 +41,9 @@ private:
   Text font1;
   Text font2;
 
-  VertexDataTextured text_data;
   ArrayTexture font_texture_array;
-
-  VertexDataTextured sprite_vertexes;
   ArrayTexture sprite_texture_array;
+
   SpriteFactory sprite_factory;
 
 public:
@@ -61,11 +59,8 @@ public:
 
   void Resize(int width, int height);
 
-  void DrawVertexData(const VertexDataTextured &vertex_data, int unit);
-
   vec2 RenderText(const Text &font, const std::string &str, const vec2 &pos, const col4 &colour);
   void RenderSprite(const Sprite &sprite, const vec2 &pos, const col4 &colour);
-
 
   void RenderPlayer(const Player &player);
 

@@ -2,8 +2,8 @@
 #pragma once
 
 #include "maths_types.hpp"
+#include "shader_textured.hpp"
 #include "texture.hpp"
-#include "vertex.hpp"
 
 #include <map>
 #include <string>
@@ -31,6 +31,6 @@ public:
 
   void ParseChar(std::string line);
 
-  void RenderGlyph(VertexDataTextured &vertex_data, glyph g, vec2 pos, const col4 &colour) const;
-  vec2 RenderString(VertexDataTextured &vertex_data, const std::string str, vec2 pos, col4 colour) const;
+  void RenderGlyph(Shader::Textured::VertexArray &vertex_data, glyph g, vec2 pos, const col4 &colour) const;
+  vec2 RenderString(Shader::Textured::VertexArray &vertex_data, const std::string str, vec2 pos, col4 colour) const;
 };

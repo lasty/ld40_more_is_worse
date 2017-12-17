@@ -21,9 +21,7 @@ Renderer::Renderer()
 , red{0.9f, 0.1f, 0.2f, 1.0f}
 , font1("../data/fonts/mono.fnt", 0)
 , font2("../data/fonts/small.fnt", 1)
-, text_data(GL_DYNAMIC_DRAW, GL_TRIANGLES)
 , font_texture_array(256, 256, 2)
-, sprite_vertexes(GL_DYNAMIC_DRAW, GL_TRIANGLES)
 , sprite_texture_array(512, 512, 4)
 {
 
@@ -87,21 +85,6 @@ void Renderer::Resize(int width, int height)
 {
   line_shader.SetResolution(width, height);
   textured_shader.SetResolution(width, height);
-}
-
-
-void Renderer::DrawVertexData(const VertexDataTextured &vertex_data, int unit)
-{
-  UseProgram(textured_shader.GetProgramId());
-  UseVAO(vertex_data.GetVAO());
-
-  textured_shader.SetOffset(0.0f, 0.0f);
-  textured_shader.SetRotation(0.0f);
-  textured_shader.SetZoom(1.0f);
-  textured_shader.SetColour(1.0f, 1.0f, 1.0f, 1.0f);
-  textured_shader.SetTexture(unit);
-
-  vertex_data.Draw();
 }
 
 
@@ -430,11 +413,11 @@ void Renderer::RenderGame(const GameState &state)
   EnableBlend();
 
   lines1.clear();
-  lines1.Line({150, 150}, red, {500, 500}, green);
+  text_data.clear();
+  sprite_vertexes.clear();
 
+  // lines1.Line({150, 150}, red, {500, 500}, green);
 
-  text_data.Clear();
-  sprite_vertexes.Clear();
 
   for (auto &item : state.world_items)
   {
@@ -470,12 +453,6 @@ void Renderer::RenderGame(const GameState &state)
   RenderPlayer(state.player);
 
 
-  sprite_vertexes.UpdateVertexes();
-  glActiveTexture(GL_TEXTURE1);
-  glBindTexture(GL_TEXTURE_2D_ARRAY, sprite_texture_array.texture_id);
-  DrawVertexData(sprite_vertexes, 1);
-
-
   vec2 mode_position{10.0f, 700.0f};
   vec2 mode_line2{10.0f, 730.0f};
 
@@ -507,16 +484,26 @@ void Renderer::RenderGame(const GameState &state)
   RenderInventory(state.player.KeyBindInventory);
 
 
-  line_shader.Update(lines1);
-  line_shader.Render(lines1);
-
-  InvalidateCache();
-
-  text_data.UpdateVertexes();
+  glActiveTexture(GL_TEXTURE1);
+  glBindTexture(GL_TEXTURE_2D_ARRAY, sprite_texture_array.texture_id);
 
   glActiveTexture(GL_TEXTURE0);
   glBindTexture(GL_TEXTURE_2D_ARRAY, font_texture_array.texture_id);
-  DrawVertexData(text_data, 0);
+
+
+  sprite_vertexes.Update();
+  textured_shader.SetTexture(1);
+  textured_shader.Render(sprite_vertexes);
+
+
+  lines1.Update();
+  line_shader.Render(lines1);
+
+
+  text_data.Update();
+  textured_shader.SetTexture(0);
+  textured_shader.Render(text_data);
+
 
   InvalidateCache();
 }
