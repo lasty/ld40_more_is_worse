@@ -15,6 +15,7 @@ public:
   {
     vec2 position;
     col4 colour;
+    vec2 uv;
   };
 
   class VertexArray : public std::vector<Vertex>
@@ -31,6 +32,7 @@ public:
 
     void Update();
 
+    void Line(const vec2 &p1, const col4 &c1, const vec2 &p2, const col4 &c2, const vec2 &normal);
     void Line(const vec2 &p1, const col4 &c1, const vec2 &p2, const col4 &c2);
     void Circle(const vec2 &position, float radius, const col4 &colour);
     void Rect(vec2 position, vec2 size, col4 colour);

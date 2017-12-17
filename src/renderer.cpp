@@ -410,7 +410,6 @@ void Renderer::RenderGame(const GameState &state)
 {
   oscilate = sin(state.wallclock * 5.0f);
 
-  EnableBlend();
 
   lines1.clear();
   text_data.clear();
@@ -490,6 +489,7 @@ void Renderer::RenderGame(const GameState &state)
   glActiveTexture(GL_TEXTURE0);
   glBindTexture(GL_TEXTURE_2D_ARRAY, font_texture_array.texture_id);
 
+  EnableBlend();
 
   sprite_vertexes.Update();
   textured_shader.SetTexture(1);

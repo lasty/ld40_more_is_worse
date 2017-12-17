@@ -89,6 +89,7 @@ void main_game()
   std::cout << "Requestiong OpenGL Context version " << GL_MAJOR << "." << GL_MINOR
             << std::endl;
 
+  auto timer_1 = SDL_GetTicks();
 
   unsigned int window_flags = SDL_WINDOW_OPENGL;
   SDL_Window *window = SDL_CreateWindow("ld40", 50, 50, WIDTH, HEIGHT, window_flags);
@@ -97,6 +98,8 @@ void main_game()
   {
     throw std::runtime_error("failed to create window");
   }
+
+  std::cout << "Created window in " << SDL_GetTicks() - timer_1 << "ms" << std::endl;
 
   auto glcontext = SDL_GL_CreateContext(window);
 

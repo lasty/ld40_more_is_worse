@@ -14,8 +14,10 @@ const std::string vertex_src =
 
 layout(location=0) in vec2 v;
 layout(location=1) in vec4 col;
+layout(location=2) in vec2 uv;
 
 out vec4 vertex_colour;
+out vec2 vertex_uv;
 
 uniform ivec2 screen_resolution;
 
@@ -43,6 +45,7 @@ void main(void)
 
   gl_Position = vec4(ScreenToClip(screen_pos), 0.0, 1.0);
   vertex_colour = col;
+  vertex_uv = uv;
 }
 )";
 
@@ -53,12 +56,15 @@ const std::string fragment_src =
 uniform vec4 colour;
 
 in vec4 vertex_colour;
+in vec2 vertex_uv;
 out vec4 out_colour;
 
 void main(void)
 {
   out_colour = colour * vertex_colour;
-  //out_colour.a += 0.5;
+  out_colour.a = 1.0 - abs(vertex_uv.y);
+  out_colour.a *= out_colour.a;
+  // out_colour.a += 0.2;
 }
 
 )";
@@ -76,6 +82,7 @@ Line::VertexArray::VertexArray()
 
   GL::ATTACH_ATTRIBUTE(0, Vertex, position);
   GL::ATTACH_ATTRIBUTE(1, Vertex, colour);
+  GL::ATTACH_ATTRIBUTE(2, Vertex, uv);
 
   glBindVertexArray(0);
 }
@@ -102,27 +109,48 @@ void Line::VertexArray::Update()
 }
 
 
+void Line::VertexArray::Line(const vec2 &p1, const col4 &c1, const vec2 &p2, const col4 &c2, const vec2 &normal)
+{
+  const float line_width = 2.0f;
+  vec2 width = normal * line_width;
+
+  Vertex tl{p1 + width, c1, {-1.0f, -1.0f}};
+  Vertex tr{p2 + width, c2, {-1.0f, -1.0f}};
+  Vertex bl{p1 - width, c1, {1.0f, 1.0f}};
+  Vertex br{p2 - width, c2, {1.0f, 1.0f}};
+
+  push_back(bl);
+  push_back(tr);
+  push_back(tl);
+
+  push_back(tr);
+  push_back(bl);
+  push_back(br);
+}
+
+
 void Line::VertexArray::Line(const vec2 &p1, const col4 &c1, const vec2 &p2, const col4 &c2)
 {
-  push_back({p1, c1});
-  push_back({p2, c2});
+  Line(p1, c1, p2, c2, get_normal(p1, p2));
 }
+
 
 void Line::VertexArray::Circle(const vec2 &position, float radius, const col4 &colour)
 {
   int segments = 32;
   for (int i = 0; i < segments; i++)
-    for (int j = 0; j <= 1; j++)
-    {
-      int a = (i + j) % segments;
+  {
+    int a1 = (i) % segments;
+    int a2 = (i + 1) % segments;
 
-      float angle = float(2 * PI) * (float(a) / float(segments));
+    float angle1 = float(2 * PI) * (float(a1) / float(segments));
+    float angle2 = float(2 * PI) * (float(a2) / float(segments));
 
-      float x = position.x + radius * cosf(angle);
-      float y = position.y + radius * sinf(angle);
+    vec2 p1{position.x + radius * cosf(angle1), position.y + radius * sinf(angle1)};
+    vec2 p2{position.x + radius * cosf(angle2), position.y + radius * sinf(angle2)};
 
-      push_back({{x, y}, colour});
-    }
+    Line(p1, colour, p2, colour);
+  }
 }
 
 
@@ -225,7 +253,8 @@ void Line::Render(VertexArray &array)
   glUseProgram(program_id);
   glBindVertexArray(array.vao_id);
 
-  glDrawArrays(GL_LINES, 0, array.size());
+  //glDrawArrays(GL_LINES, 0, array.size());
+  glDrawArrays(GL_TRIANGLES, 0, array.size());
 }
 
 
