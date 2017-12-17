@@ -26,6 +26,7 @@ add_executable(ld40 WIN32
   src/game.cpp
   src/gl.cpp
   src/items.cpp
+  src/line_shader.cpp
   src/main.cpp
   src/maths.cpp
   src/renderer.cpp

@@ -23,12 +23,11 @@ struct glyph
 class Text
 {
 public:
-  //Texture tex;
   int layer;
 
   std::map<char, glyph> glyphs;
 
-  Text(std::string texture_filename, std::string font_filename, int layer);
+  Text(std::string font_filename, int layer);
 
   void ParseChar(std::string line);
 

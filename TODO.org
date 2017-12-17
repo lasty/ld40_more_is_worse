@@ -30,6 +30,7 @@
 # Bugs
 * Player moves faster when up/left held together
 * Player stops moving when left/right still held
+* Monster info card and item info card will both draw at the same time
 
 
 # Theme

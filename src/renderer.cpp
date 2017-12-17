@@ -15,14 +15,12 @@
 
 
 Renderer::Renderer()
-: lines_data(GL_DYNAMIC_DRAW)
-// , particle_data(GL_DYNAMIC_DRAW, GL_TRIANGLES)
-, white{1.0f, 1.0f, 1.0f, 1.0f}
+: white{1.0f, 1.0f, 1.0f, 1.0f}
 , grey{0.6f, 0.6f, 0.7f, 1.0f}
 , green{0.2f, 1.0f, 0.2f, 1.0f}
 , red{0.9f, 0.1f, 0.2f, 1.0f}
-, font1("../data/fonts/mono_0.png", "../data/fonts/mono.fnt", 0)
-, font2("../data/fonts/small_0.png", "../data/fonts/small.fnt", 1)
+, font1("../data/fonts/mono.fnt", 0)
+, font2("../data/fonts/small.fnt", 1)
 , text_data(GL_DYNAMIC_DRAW, GL_TRIANGLES)
 , font_texture_array(256, 256, 2)
 , sprite_vertexes(GL_DYNAMIC_DRAW, GL_TRIANGLES)
@@ -80,25 +78,15 @@ void Renderer::DisableBlend()
   glDisable(GL_BLEND);
 }
 
+void Renderer::InvalidateCache()
+{
+  gl_state = {};
+}
 
 void Renderer::Resize(int width, int height)
 {
-  basic_shader.SetResolution(width, height);
+  line_shader.SetResolution(width, height);
   textured_shader.SetResolution(width, height);
-}
-
-
-void Renderer::DrawVertexData(GLenum draw_type, const VertexDataBasic &vertex_data)
-{
-  UseProgram(basic_shader.GetProgramId());
-  UseVAO(vertex_data.GetVAO());
-
-  basic_shader.SetOffset(0.0f, 0.0f);
-  basic_shader.SetRotation(0.0f);
-  basic_shader.SetZoom(1.0f);
-  basic_shader.SetColour(1.0f, 1.0f, 1.0f, 1.0f);
-
-  glDrawArrays(draw_type, 0, vertex_data.GetNumVertexes());
 }
 
 
@@ -145,11 +133,11 @@ std::string GetHealthText(const Health &health)
 
 void Renderer::RenderPlayer(const Player &player)
 {
-  lines_data.DrawCircle(player.position, player.radius, green);
+  lines1.Circle(player.position, player.radius, green);
 
   vec2 direction = normalize(player.direction);
   vec2 facing_circle = player.position + (direction * player.radius);
-  lines_data.DrawCircle(facing_circle, player.radius / 4.0f, green);
+  lines1.Circle(facing_circle, player.radius / 4.0f, green);
 
   vec2 label_pos = player.position + vec2{-20.0f, player.radius};
   RenderText(font2, "Player", label_pos, white);
@@ -160,7 +148,7 @@ void Renderer::RenderPlayer(const Player &player)
 
 void Renderer::RenderItem(const Item &item, bool colliding, bool moused_over)
 {
-  lines_data.DrawCircle(item.position, item.radius, item.colour);
+  lines1.Circle(item.position, item.radius, item.colour);
 
   switch (item.type)
   {
@@ -181,13 +169,13 @@ void Renderer::RenderItem(const Item &item, bool colliding, bool moused_over)
   if (colliding)
   {
     float r1 = item.radius + (oscilate * 5);
-    lines_data.DrawCircle(item.position, r1, white);
+    lines1.Circle(item.position, r1, white);
   }
 
   if (moused_over)
   {
     float r1 = item.radius + (oscilate * 5);
-    lines_data.DrawCircle(item.position, r1, white);
+    lines1.Circle(item.position, r1, white);
   }
   else
   {
@@ -232,6 +220,12 @@ std::string GetCooldownText(const Item &item, bool inv_view)
   return ss.str();
 }
 
+void GrowBox(vec2 &box, const vec2 &bigger)
+{
+  box.x = std::max(box.x, bigger.x);
+  box.y = std::max(box.y, bigger.y + 20.0f);
+}
+
 
 void Renderer::RenderItemInfoCard(const Item &item, const vec2 &mouse_pos)
 {
@@ -240,58 +234,72 @@ void Renderer::RenderItemInfoCard(const Item &item, const vec2 &mouse_pos)
   col4 red{1.0f, 0.2f, 0.2f, 1.0f};
   col4 tan{0.8f, 0.6f, 0.2f, 1.0f};
 
+  vec2 box_topleft = infocard_pos;
+  vec2 box_size = infocard_pos;
+  vec2 b2 = box_size;
 
-  RenderText(font2, item.name, infocard_pos, white);
+  b2 = RenderText(font2, item.name, infocard_pos, white);
   infocard_pos.y += 20;
+  GrowBox(box_size, b2);
 
   switch (item.type)
   {
     case Item_Type::health:
     {
-      RenderText(font2, "Health item", infocard_pos, red);
+      b2 = RenderText(font2, "Health item", infocard_pos, red);
       infocard_pos.y += 20;
+      GrowBox(box_size, b2);
+
       std::stringstream ss;
       ss << item.healing_amount << " healing amount";
-      RenderText(font2, ss.str(), infocard_pos, grey);
+      b2 = RenderText(font2, ss.str(), infocard_pos, grey);
       infocard_pos.y += 20;
+      GrowBox(box_size, b2);
     }
     break;
 
 
     case Item_Type::gun:
     {
-      RenderText(font2, "Projectile Weapon", infocard_pos, tan);
+      b2 = RenderText(font2, "Projectile Weapon", infocard_pos, tan);
       infocard_pos.y += 20;
+      GrowBox(box_size, b2);
+
       std::stringstream ss;
       ss << item.projectile_damage << " damage";
-      RenderText(font2, ss.str(), infocard_pos, grey);
+      b2 = RenderText(font2, ss.str(), infocard_pos, grey);
       infocard_pos.y += 20;
+      GrowBox(box_size, b2);
     }
     break;
 
     case Item_Type::command:
-      RenderText(font2, "[Command]", infocard_pos, grey);
+      b2 = RenderText(font2, "[Command]", infocard_pos, grey);
       infocard_pos.y += 20;
+      GrowBox(box_size, b2);
       break;
 
     case Item_Type::none:
-      RenderText(font2, "[None]", infocard_pos, grey);
+      b2 = RenderText(font2, "[None]", infocard_pos, grey);
       infocard_pos.y += 20;
+      GrowBox(box_size, b2);
       break;
   }
 
   if (item.has_limited_uses)
   {
     vec2 pos2 = RenderText(font2, "Limited uses: ", infocard_pos, grey);
-    pos2 = RenderText(font2, GetLimitedUsesText(item, false), pos2, green);
+    b2 = RenderText(font2, GetLimitedUsesText(item, false), pos2, green);
     infocard_pos.y += 20;
+    GrowBox(box_size, b2);
   }
 
   if (item.has_cooldown)
   {
     vec2 pos2 = RenderText(font2, "Cooldown: ", infocard_pos, grey);
-    RenderText(font2, GetCooldownText(item, false), pos2, green);
+    b2 = RenderText(font2, GetCooldownText(item, false), pos2, green);
     infocard_pos.y += 20;
+    GrowBox(box_size, b2);
   }
 
   //   case Active_Type::none:
@@ -300,28 +308,28 @@ void Renderer::RenderItemInfoCard(const Item &item, const vec2 &mouse_pos)
   //   case Active_Type::hold_down:
   //     pos2 = font2.RenderString(text_data, "Hold to use ", infocard_pos, grey);
 
-  //   case Active_Type::limited_use:
-  //     pos2 = font2.RenderString(text_data, "Limited uses ", infocard_pos, grey);
-
   //   case Active_Type::passive:
   //     pos2 = font2.RenderString(text_data, "Passive", infocard_pos, grey);
 
-  //   case Active_Type::repeatable:
-  //     pos2 = font2.RenderString(text_data, "Repeatable", infocard_pos, grey);
-
   //   case Active_Type::toggle:
   //     pos2 = font2.RenderString(text_data, "Toggle on/off ", infocard_pos, grey);
+
+  const vec2 box_border = {5.0f, 5.0f};
+  box_size += box_border;
+  box_topleft -= box_border;
+
+  lines1.Rect(box_topleft, box_size - box_topleft, grey);
 }
 
 
 void Renderer::RenderMonster(const Monster &monster, bool moused_over)
 {
-  lines_data.DrawCircle(monster.position, monster.radius, red);
+  lines1.Circle(monster.position, monster.radius, red);
 
   if (moused_over)
   {
     float r1 = monster.radius + (oscilate * 5);
-    lines_data.DrawCircle(monster.position, r1, white);
+    lines1.Circle(monster.position, r1, white);
   }
   else
   {
@@ -334,25 +342,33 @@ void Renderer::RenderMonsterInfoCard(const Monster &monster, const vec2 &mouse_p
 {
   vec2 infocard_pos = mouse_pos + vec2{10.0f, 20.0f};
 
-  RenderText(font2, monster.name, infocard_pos, white);
-  infocard_pos.y += 20;
+  vec2 box_topleft = infocard_pos;
+  vec2 box_size = infocard_pos;
+  vec2 b2 = box_size;
 
+
+  b2 = RenderText(font2, monster.name, infocard_pos, white);
+  infocard_pos.y += 20;
+  GrowBox(box_size, b2);
 
   switch (monster.type)
   {
     case Monster_Type::dummy:
-      RenderText(font2, "Dummy", infocard_pos, red);
+      b2 = RenderText(font2, "Dummy", infocard_pos, red);
       infocard_pos.y += 20;
+      GrowBox(box_size, b2);
       break;
 
     case Monster_Type::melee:
-      RenderText(font2, "Melee", infocard_pos, red);
+      b2 = RenderText(font2, "Melee", infocard_pos, red);
       infocard_pos.y += 20;
+      GrowBox(box_size, b2);
       break;
 
     case Monster_Type::shooter:
-      RenderText(font2, "Shooter", infocard_pos, red);
+      b2 = RenderText(font2, "Shooter", infocard_pos, red);
       infocard_pos.y += 20;
+      GrowBox(box_size, b2);
       break;
 
     case Monster_Type::none:
@@ -360,14 +376,21 @@ void Renderer::RenderMonsterInfoCard(const Monster &monster, const vec2 &mouse_p
   }
 
   vec2 pos2 = RenderText(font2, "Health ", infocard_pos, grey);
-  RenderText(font2, GetHealthText(monster.health), pos2, green);
+  b2 = RenderText(font2, GetHealthText(monster.health), pos2, green);
   infocard_pos.y += 20;
+  GrowBox(box_size, b2);
+
+  const vec2 box_border = {5.0f, 5.0f};
+  box_size += box_border;
+  box_topleft -= box_border;
+
+  lines1.Rect(box_topleft, box_size - box_topleft, red);
 }
 
 
 void Renderer::RenderProjectile(const Projectile &projectile)
 {
-  lines_data.DrawCircle(projectile.position, projectile.radius, white);
+  lines1.Circle(projectile.position, projectile.radius, white);
 }
 
 
@@ -406,7 +429,10 @@ void Renderer::RenderGame(const GameState &state)
 
   EnableBlend();
 
-  lines_data.Clear();
+  lines1.clear();
+  lines1.Line({150, 150}, red, {500, 500}, green);
+
+
   text_data.Clear();
   sprite_vertexes.Clear();
 
@@ -450,17 +476,6 @@ void Renderer::RenderGame(const GameState &state)
   DrawVertexData(sprite_vertexes, 1);
 
 
-  lines_data.UpdateVertexes();
-  DrawVertexData(GL_LINES, lines_data);
-
-  // text_data.UpdateVertexes();
-  // glActiveTexture(GL_TEXTURE0);
-  // glBindTexture(GL_TEXTURE_2D_ARRAY, font_texture_array.texture_id);
-  // DrawVertexData(text_data, 0);
-
-
-  // text_data.Clear();
-
   vec2 mode_position{10.0f, 700.0f};
   vec2 mode_line2{10.0f, 730.0f};
 
@@ -473,15 +488,6 @@ void Renderer::RenderGame(const GameState &state)
     RenderText(font1, "Normal Mode", mode_position, white);
   }
 
-
-  // text_data.UpdateVertexes();
-
-  // glActiveTexture(GL_TEXTURE0);
-  // glBindTexture(GL_TEXTURE_2D_ARRAY, font_texture_array.texture_id);
-  // DrawVertexData(text_data, 0);
-
-
-  // text_data.Clear();
   if (state.drop_mode)
   {
     RenderText(font2, "Press inventory key to drop items", mode_line2, grey);
@@ -500,11 +506,19 @@ void Renderer::RenderGame(const GameState &state)
 
   RenderInventory(state.player.KeyBindInventory);
 
+
+  line_shader.Update(lines1);
+  line_shader.Render(lines1);
+
+  InvalidateCache();
+
   text_data.UpdateVertexes();
 
   glActiveTexture(GL_TEXTURE0);
   glBindTexture(GL_TEXTURE_2D_ARRAY, font_texture_array.texture_id);
   DrawVertexData(text_data, 0);
+
+  InvalidateCache();
 }
 
 

@@ -4,6 +4,7 @@
 #include <vector>
 
 #include "game.hpp"
+#include "line_shader.hpp"
 #include "shader.hpp"
 #include "sprites.hpp"
 #include "text.hpp"
@@ -24,11 +25,11 @@ class Renderer
 private:
   GLState gl_state;
 
-  Shader::Basic basic_shader;
   Shader::Textured textured_shader;
 
-  VertexDataBasic lines_data;
-  // VertexDataTextured particle_data;
+
+  Shader::Line line_shader;
+  Shader::Line::LineVertexArray lines1;
 
   float oscilate = 0.0f;
 
@@ -56,9 +57,10 @@ public:
   void EnableBlend();
   void DisableBlend();
 
+  void InvalidateCache();
+
   void Resize(int width, int height);
 
-  void DrawVertexData(GLenum draw_type, const VertexDataBasic &vertex_data);
   void DrawVertexData(const VertexDataTextured &vertex_data, int unit);
 
   vec2 RenderText(const Text &font, const std::string &str, const vec2 &pos, const col4 &colour);

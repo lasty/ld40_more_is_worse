@@ -66,6 +66,12 @@ void Debuging(bool enable)
 }
 
 
+void DetachAttribute(int attrib_id)
+{
+  glDisableVertexAttribArray(attrib_id);
+}
+
+
 int GetShaderi(int shader_id, GLenum param_name)
 {
   int value = 0;
@@ -213,7 +219,6 @@ bool CheckError()
   }
   return false;
 }
-
 
 
 } //namespace GL

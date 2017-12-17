@@ -45,8 +45,7 @@ int parse(std::string line, std::string key)
 }
 
 
-Text::Text(std::string texture_filename, std::string font_filename, int layer)
-//: tex(texture_filename)
+Text::Text(std::string font_filename, int layer)
 : layer(layer)
 {
   //Parse font metadata
