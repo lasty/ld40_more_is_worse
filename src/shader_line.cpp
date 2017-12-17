@@ -1,5 +1,5 @@
 
-#include "line_shader.hpp"
+#include "shader_line.hpp"
 
 #include <stdexcept>
 #include <string>

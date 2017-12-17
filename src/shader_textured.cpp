@@ -1,5 +1,5 @@
 
-#include "shader.hpp"
+#include "shader_textured.hpp"
 
 #include <stdexcept>
 #include <string>

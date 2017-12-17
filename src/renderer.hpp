@@ -4,8 +4,8 @@
 #include <vector>
 
 #include "game.hpp"
-#include "line_shader.hpp"
-#include "shader.hpp"
+#include "shader_line.hpp"
+#include "shader_textured.hpp"
 #include "sprites.hpp"
 #include "text.hpp"
 #include "texture.hpp"
