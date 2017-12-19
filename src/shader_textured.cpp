@@ -11,6 +11,13 @@
 
 namespace {
 
+struct attrib
+{
+  constexpr static auto position = 0;
+  constexpr static auto colour = 1;
+  constexpr static auto uv = 2;
+};
+
 const std::string vertex_src =
   R"(#version 330
 
@@ -86,9 +93,13 @@ Textured::VertexArray::VertexArray()
   glBindVertexArray(vao_id);
   glBindBuffer(GL_ARRAY_BUFFER, buffer_id);
 
-  GL::ATTACH_ATTRIBUTE(0, Vertex, position);
-  GL::ATTACH_ATTRIBUTE(1, Vertex, colour);
-  GL::ATTACH_ATTRIBUTE(2, Vertex, uv);
+  GL::ATTACH_ATTRIBUTE(attrib::position, Vertex, position);
+  GL::ATTACH_ATTRIBUTE(attrib::colour, Vertex, colour);
+  GL::ATTACH_ATTRIBUTE(attrib::uv, Vertex, uv);
+
+  // GL::AttachAttribute<vec2>(attrib::position, sizeof(Vertex), offsetof(Vertex, position));
+  // GL::AttachAttribute<col4>(attrib::colour, sizeof(Vertex), offsetof(Vertex, colour));
+  // GL::AttachAttribute<vec3>(attrib::uv, sizeof(Vertex), offsetof(Vertex, uv));
 
   glBindVertexArray(0);
 }

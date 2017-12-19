@@ -1,6 +1,9 @@
 
 # Todo List
 
+* Sprite component with animations?
+
+
 
 * Monster class
     * Melee Attacks player when touching

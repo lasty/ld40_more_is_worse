@@ -6,6 +6,7 @@
 #include <map>
 #include <vector>
 
+#include "maths_types.hpp"
 #include "to_string.hpp"
 
 static_assert(sizeof(GLfloat) == sizeof(float), "opengl float wrong size");
@@ -220,5 +221,35 @@ bool CheckError()
   return false;
 }
 
+
+template<typename T>
+void AttachAttribute(int attrib_id, size_t stride, size_t offset)
+{
+  const GLvoid *offset_ptr = reinterpret_cast<GLvoid *>(offset);
+
+  if constexpr (std::is_same_v<T, vec2>)
+  {
+    glVertexAttribPointer(attrib_id, 2, GL_FLOAT, GL_FALSE, stride, offset_ptr);
+  }
+  else if constexpr (std::is_same_v<T, vec3>)
+  {
+    glVertexAttribPointer(attrib_id, 3, GL_FLOAT, GL_FALSE, stride, offset_ptr);
+  }
+  else if constexpr (std::is_same_v<T, col4>)
+  {
+    glVertexAttribPointer(attrib_id, 4, GL_UNSIGNED_BYTE, GL_TRUE, stride, offset_ptr);
+  }
+  // else
+  // {
+  //   throw "Unknown attrib type";
+  // }
+
+  glEnableVertexAttribArray(attrib_id);
+}
+
+
+template void AttachAttribute<vec2>(int, size_t, size_t);
+template void AttachAttribute<vec3>(int, size_t, size_t);
+template void AttachAttribute<col4>(int, size_t, size_t);
 
 } //namespace GL
