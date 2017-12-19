@@ -56,5 +56,8 @@ struct Item
 
 
   std::string name = "Uninitialized Item!";
-};
 
+
+  std::string animation;
+  float animation_time = 0.0f;
+};

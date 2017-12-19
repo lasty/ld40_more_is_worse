@@ -39,6 +39,8 @@ void Game::UpdateItem(Item& item, float dt)
     item.cooldown -= dt;
     if (item.cooldown < 0.0f) item.cooldown = 0.0f;
   }
+
+  item.animation_time += dt;
 }
 
 

@@ -2,8 +2,6 @@
 #include "factories.hpp"
 
 
-
-
 ///////////////////////////////////////
 
 
@@ -50,6 +48,9 @@ Item ItemFactory::GenerateRandomItem()
 
       i.CreateGun(random.Int(1, 5));
       i.AddCooldown(random.Int(1, 2));
+
+      i.animation = "star";
+      i.animation_time = random.Float(0.0f, 1.0f);
       break;
 
     case Item_Type::health:
@@ -113,4 +114,3 @@ Monster ItemFactory::GenerateRandomMonster()
 
   return m;
 }
-

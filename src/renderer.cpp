@@ -22,13 +22,13 @@ Renderer::Renderer()
 , font1("../data/fonts/mono.fnt", 0)
 , font2("../data/fonts/small.fnt", 1)
 , font_texture_array(256, 256, 2)
-, sprite_texture_array(512, 512, 4)
+, sprite_texture_array(512, 512, 5)
 {
 
   font_texture_array.LoadLayer(0, "../data/fonts/mono_0.png");
   font_texture_array.LoadLayer(1, "../data/fonts/small_0.png");
 
-  sprite_texture_array.LoadLayersXCF(4, "../data/images/items1.xcf");
+  sprite_texture_array.LoadLayersXCF(5, "../data/images/items1.xcf");
 
   GL::CheckError();
 }
@@ -133,21 +133,32 @@ void Renderer::RenderItem(const Item &item, bool colliding, bool moused_over)
 {
   lines1.Circle(item.position, item.radius, item.colour);
 
-  switch (item.type)
+  if (not item.animation.empty())
   {
-    case Item_Type::gun:
-      RenderSprite(sprite_factory.GetSprite("gun"), item.position, item.colour);
-      break;
+    auto anim = sprite_factory.GetAnimation(item.animation);
 
-    case Item_Type::health:
-      RenderSprite(sprite_factory.GetSprite("healthkit_base"), item.position, white);
-      RenderSprite(sprite_factory.GetSprite("healthkit_top"), item.position, item.colour);
-      break;
-
-    case Item_Type::command:
-    case Item_Type::none:
-      break;
+    auto sprite = anim.GetFrame(item.animation_time);
+    RenderSprite(sprite, item.position, item.colour);
   }
+  else
+    switch (item.type)
+    {
+      case Item_Type::gun:
+        RenderSprite(sprite_factory.GetSprite("gun_shadow"), item.position, white);
+        RenderSprite(sprite_factory.GetSprite("gun_base"), item.position, white);
+        RenderSprite(sprite_factory.GetSprite("gun_top"), item.position, item.colour);
+        break;
+
+      case Item_Type::health:
+        RenderSprite(sprite_factory.GetSprite("healthkit_shadow"), item.position, white);
+        RenderSprite(sprite_factory.GetSprite("healthkit_base"), item.position, white);
+        RenderSprite(sprite_factory.GetSprite("healthkit_top"), item.position, item.colour);
+        break;
+
+      case Item_Type::command:
+      case Item_Type::none:
+        break;
+    }
 
   if (colliding)
   {
@@ -296,6 +307,19 @@ void Renderer::RenderItemInfoCard(const Item &item, const vec2 &mouse_pos)
 
   //   case Active_Type::toggle:
   //     pos2 = font2.RenderString(text_data, "Toggle on/off ", infocard_pos, grey);
+
+  if (false)
+  {
+    std::stringstream ss;
+    SetStreamFormat(ss);
+    float fm = fmod(item.animation_time, 1.0f);
+    int im = fm * 3;
+    ss << "[" << item.animation_time << "]  fmod(" << fm << ") ->int = " << im;
+    vec2 pos2 = RenderText(font2, "Animation: '" + item.animation + "'", infocard_pos, grey);
+    b2 = RenderText(font2, ss.str(), pos2, green);
+    infocard_pos.y += 20;
+    GrowBox(box_size, b2);
+  }
 
   const vec2 box_border = {5.0f, 5.0f};
   box_size += box_border;
