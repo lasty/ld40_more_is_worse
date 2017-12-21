@@ -288,6 +288,14 @@ col4 RandomRGBA()
 }
 
 
+rect grow_rect(const rect &r, float border)
+{
+  const vec2 b{border, border};
+
+  return {r.position - b, r.size + (b * 2)};
+}
+
+
 mat4 mat4_identity()
 {
   mat4 m{0.0f};

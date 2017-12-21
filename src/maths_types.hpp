@@ -16,6 +16,11 @@ struct vec3
   float z;
 };
 
+struct rect
+{
+  vec2 position;
+  vec2 size;
+};
 
 struct col4
 {

@@ -7,6 +7,8 @@
 #include <iostream>
 #include <sstream>
 
+#include "maths.hpp"
+
 
 bool starts_with(std::string line, std::string key)
 {
@@ -61,6 +63,7 @@ Text::Text(std::string font_filename, int layer)
   std::string common_line;
   getline(in, common_line);
   assert(starts_with(common_line, "common"));
+  line_spacing = parse(common_line, "lineHeight");
 
   std::string page_line;
   getline(in, page_line);
@@ -132,4 +135,84 @@ vec2 Text::RenderString(Shader::Textured::VertexArray &vertex_data, const std::s
   }
 
   return pos;
+}
+
+const TextBox::endl_t TextBox::endl = {};
+
+TextBox::TextBox(Shader::Textured::VertexArray &vertex_array, const Text &font, const vec2 start_pos)
+: font(&font)
+, vertex_array(vertex_array)
+, colour(1.0f, 1.0f, 1.0f, 1.0f)
+, top_left(start_pos)
+, bot_right(start_pos)
+, cursor_pos(start_pos)
+{
+}
+
+
+TextBox &TextBox::operator<<(Text &font)
+{
+  this->font = &font;
+  return *this;
+}
+
+
+TextBox &TextBox::operator<<(const col4 &colour)
+{
+  this->colour = colour;
+  return *this;
+}
+
+
+TextBox &TextBox::operator<<(decltype(TextBox::endl))
+{
+  cursor_pos.x = top_left.x;
+  cursor_pos.y += font->line_spacing;
+  return *this;
+}
+
+
+TextBox &TextBox::operator<<(const std::string &s)
+{
+  cursor_pos = font->RenderString(vertex_array, s, cursor_pos, colour);
+
+  bot_right.x = std::max(bot_right.x, cursor_pos.x);
+  bot_right.y = std::max(bot_right.y, cursor_pos.y + font->line_spacing);
+
+  return *this;
+}
+
+
+TextBox &TextBox::operator<<(int i)
+{
+  std::stringstream ss;
+  ss << i;
+  return operator<<(ss.str());
+}
+
+
+TextBox &TextBox::operator<<(float f)
+{
+  std::stringstream ss;
+  ss.precision(1);
+  ss << std::fixed;
+  ss << f;
+  return operator<<(ss.str());
+}
+
+
+vec2 TextBox::GetSize() const
+{
+  return bot_right - top_left;
+}
+
+
+rect TextBox::GetRect(float border) const
+{
+  rect r = {top_left, GetSize()};
+  if (border != 0.0f)
+  {
+    return grow_rect(r, border);
+  }
+  return r;
 }

@@ -37,6 +37,7 @@ private:
   col4 grey;
   col4 green;
   col4 red;
+  col4 tan;
 
   Text font1;
   Text font2;

@@ -19,6 +19,7 @@ Renderer::Renderer()
 , grey{0.6f, 0.6f, 0.7f, 1.0f}
 , green{0.2f, 1.0f, 0.2f, 1.0f}
 , red{0.9f, 0.1f, 0.2f, 1.0f}
+, tan{0.8f, 0.6f, 0.2f, 1.0f}
 , font1("../data/fonts/mono.fnt", 0)
 , font2("../data/fonts/small.fnt", 1)
 , font_texture_array(256, 256, 2)
@@ -214,86 +215,50 @@ std::string GetCooldownText(const Item &item, bool inv_view)
   return ss.str();
 }
 
-void GrowBox(vec2 &box, const vec2 &bigger)
-{
-  box.x = std::max(box.x, bigger.x);
-  box.y = std::max(box.y, bigger.y + 20.0f);
-}
-
 
 void Renderer::RenderItemInfoCard(const Item &item, const vec2 &mouse_pos)
 {
   vec2 infocard_pos = mouse_pos + vec2{10.0f, 20.0f};
 
-  col4 red{1.0f, 0.2f, 0.2f, 1.0f};
-  col4 tan{0.8f, 0.6f, 0.2f, 1.0f};
+  TextBox box(text_data, font2, infocard_pos);
 
-  vec2 box_topleft = infocard_pos;
-  vec2 box_size = infocard_pos;
-  vec2 b2 = box_size;
-
-  b2 = RenderText(font2, item.name, infocard_pos, white);
-  infocard_pos.y += 20;
-  GrowBox(box_size, b2);
+  box << white << item.name << box.endl;
 
   switch (item.type)
   {
     case Item_Type::health:
     {
-      b2 = RenderText(font2, "Health item", infocard_pos, red);
-      infocard_pos.y += 20;
-      GrowBox(box_size, b2);
+      box << red << "Health item" << box.endl;
 
-      std::stringstream ss;
-      ss << item.healing_amount << " healing amount";
-      b2 = RenderText(font2, ss.str(), infocard_pos, grey);
-      infocard_pos.y += 20;
-      GrowBox(box_size, b2);
+      box << grey << item.healing_amount << " healing amount" << box.endl;
     }
     break;
 
 
     case Item_Type::gun:
     {
-      b2 = RenderText(font2, "Projectile Weapon", infocard_pos, tan);
-      infocard_pos.y += 20;
-      GrowBox(box_size, b2);
+      box << tan << "Projectile Weapon" << box.endl;
 
-      std::stringstream ss;
-      ss << item.projectile_damage << " damage";
-      b2 = RenderText(font2, ss.str(), infocard_pos, grey);
-      infocard_pos.y += 20;
-      GrowBox(box_size, b2);
+      box << grey << item.projectile_damage << " damage" << box.endl;
     }
     break;
 
     case Item_Type::command:
-      b2 = RenderText(font2, "[Command]", infocard_pos, grey);
-      infocard_pos.y += 20;
-      GrowBox(box_size, b2);
+      box << grey << "[Command]" << box.endl;
       break;
 
     case Item_Type::none:
-      b2 = RenderText(font2, "[None]", infocard_pos, grey);
-      infocard_pos.y += 20;
-      GrowBox(box_size, b2);
-      break;
+      box << grey << "[None]" << box.endl;
   }
 
   if (item.has_limited_uses)
   {
-    vec2 pos2 = RenderText(font2, "Limited uses: ", infocard_pos, grey);
-    b2 = RenderText(font2, GetLimitedUsesText(item, false), pos2, green);
-    infocard_pos.y += 20;
-    GrowBox(box_size, b2);
+    box << grey << "Limited uses: " << green << GetLimitedUsesText(item, false) << box.endl;
   }
 
   if (item.has_cooldown)
   {
-    vec2 pos2 = RenderText(font2, "Cooldown: ", infocard_pos, grey);
-    b2 = RenderText(font2, GetCooldownText(item, false), pos2, green);
-    infocard_pos.y += 20;
-    GrowBox(box_size, b2);
+    box << grey << "Cooldown: " << green << GetCooldownText(item, false) << box.endl;
   }
 
   //   case Active_Type::none:
@@ -308,24 +273,18 @@ void Renderer::RenderItemInfoCard(const Item &item, const vec2 &mouse_pos)
   //   case Active_Type::toggle:
   //     pos2 = font2.RenderString(text_data, "Toggle on/off ", infocard_pos, grey);
 
-  if (false)
+  if (true)
   {
-    std::stringstream ss;
-    SetStreamFormat(ss);
+    box << grey << "Animation: '" << item.animation << "'";
+
     float fm = fmod(item.animation_time, 1.0f);
     int im = fm * 3;
-    ss << "[" << item.animation_time << "]  fmod(" << fm << ") ->int = " << im;
-    vec2 pos2 = RenderText(font2, "Animation: '" + item.animation + "'", infocard_pos, grey);
-    b2 = RenderText(font2, ss.str(), pos2, green);
-    infocard_pos.y += 20;
-    GrowBox(box_size, b2);
+    box << green << "[" << item.animation_time << "]  fmod(" << fm << ") ->int = " << im << box.endl;
   }
 
-  const vec2 box_border = {5.0f, 5.0f};
-  box_size += box_border;
-  box_topleft -= box_border;
+  auto[box_topleft, box_size] = box.GetRect(5.0f);
 
-  lines1.Rect(box_topleft, box_size - box_topleft, grey);
+  lines1.Rect(box_topleft, box_size, grey);
 }
 
 
@@ -349,49 +308,38 @@ void Renderer::RenderMonsterInfoCard(const Monster &monster, const vec2 &mouse_p
 {
   vec2 infocard_pos = mouse_pos + vec2{10.0f, 20.0f};
 
-  vec2 box_topleft = infocard_pos;
-  vec2 box_size = infocard_pos;
-  vec2 b2 = box_size;
+  TextBox box(text_data, font2, infocard_pos);
 
-
-  b2 = RenderText(font2, monster.name, infocard_pos, white);
-  infocard_pos.y += 20;
-  GrowBox(box_size, b2);
+  box << white << monster.name << box.endl;
 
   switch (monster.type)
   {
     case Monster_Type::dummy:
-      b2 = RenderText(font2, "Dummy", infocard_pos, red);
-      infocard_pos.y += 20;
-      GrowBox(box_size, b2);
+      box << red << "Dummy" << box.endl;
       break;
 
     case Monster_Type::melee:
-      b2 = RenderText(font2, "Melee", infocard_pos, red);
-      infocard_pos.y += 20;
-      GrowBox(box_size, b2);
+      box << red << "Melee" << box.endl;
       break;
 
     case Monster_Type::shooter:
-      b2 = RenderText(font2, "Shooter", infocard_pos, red);
-      infocard_pos.y += 20;
-      GrowBox(box_size, b2);
+      box << red << "Shooter" << box.endl;
       break;
 
     case Monster_Type::none:
       break;
   }
 
-  vec2 pos2 = RenderText(font2, "Health ", infocard_pos, grey);
-  b2 = RenderText(font2, GetHealthText(monster.health), pos2, green);
-  infocard_pos.y += 20;
-  GrowBox(box_size, b2);
+  box << grey << "Health " << green << GetHealthText(monster.health) << box.endl;
 
-  const vec2 box_border = {5.0f, 5.0f};
-  box_size += box_border;
-  box_topleft -= box_border;
 
-  lines1.Rect(box_topleft, box_size - box_topleft, red);
+  // const vec2 box_border = {5.0f, 5.0f};
+  // const vec2 box_topleft = box.top_left - box_border;
+  // const vec2 box_size = box.GetSize() + box_border * 2;
+
+  auto[box_topleft, box_size] = box.GetRect(5.0f);
+
+  lines1.Rect(box_topleft, box_size, red);
 }
 
 

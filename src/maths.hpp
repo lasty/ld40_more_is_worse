@@ -54,6 +54,7 @@ int RandomInt(int r1, int r2);
 col4 RandomRGB();
 col4 RandomRGBA();
 
+rect grow_rect(const rect &r, float border);
 
 mat4 mat4_identity();
 mat4 mat4_zero();
