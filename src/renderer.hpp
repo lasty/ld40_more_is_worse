@@ -39,10 +39,8 @@ private:
   col4 red;
   col4 tan;
 
-  Text font1;
-  Text font2;
+  Text text;
 
-  ArrayTexture font_texture_array;
   ArrayTexture sprite_texture_array;
 
   SpriteFactory sprite_factory;
@@ -60,7 +58,7 @@ public:
 
   void Resize(int width, int height);
 
-  vec2 RenderText(const Text &font, const std::string &str, const vec2 &pos, const col4 &colour);
+  // vec2 RenderText(const Font &font, const std::string &str, const vec2 &pos, const col4 &colour);
   void RenderSprite(const Sprite &sprite, const vec2 &pos, const col4 &colour);
 
   void RenderPlayer(const Player &player);

@@ -46,8 +46,32 @@ int parse(std::string line, std::string key)
   return v;
 }
 
+std::string parse_string(std::string &line, std::string key)
+{
+  std::cout << "parsing string key '" << key << "' in string: \n"
+            << line << std::endl;
 
-Text::Text(std::string font_filename, int layer)
+  auto pos1 = line.find(key);
+  assert(pos1 != std::string::npos);
+
+  auto pos2 = line.find("=", pos1);
+  assert(pos2 != std::string::npos);
+
+  auto pos3 = line.find("\"", pos2);
+  assert(pos3 != std::string::npos);
+
+  auto pos4 = line.find("\"", pos3 + 1);
+  assert(pos3 != std::string::npos);
+
+  std::string thestring = line.substr(pos3 + 1, (pos4 - pos3) - 1);
+
+  std::cout << "got string: " << thestring << std::endl;
+
+  return thestring;
+}
+
+
+Font::Font(std::string font_filename, int layer)
 : layer(layer)
 {
   //Parse font metadata
@@ -64,10 +88,16 @@ Text::Text(std::string font_filename, int layer)
   getline(in, common_line);
   assert(starts_with(common_line, "common"));
   line_spacing = parse(common_line, "lineHeight");
+  int pages = parse(common_line, "pages");
 
-  std::string page_line;
-  getline(in, page_line);
-  assert(starts_with(page_line, "page"));
+  for (int i = 0; i < pages; i++)
+  {
+    std::string page_line;
+    getline(in, page_line);
+    assert(starts_with(page_line, "page"));
+
+    image_filenames.push_back(parse_string(page_line, "file"));
+  }
 
   std::string count_line;
   getline(in, count_line);
@@ -88,23 +118,24 @@ Text::Text(std::string font_filename, int layer)
 }
 
 
-void Text::ParseChar(std::string line)
+void Font::ParseChar(std::string line)
 {
   int id = parse(line, "id");
   int x = parse(line, "x");
   int y = parse(line, "y");
+  int z = parse(line, "page");
   int width = parse(line, "width");
   int height = parse(line, "height");
   int xoffset = parse(line, "xoffset");
   int yoffset = parse(line, "yoffset");
   int xadvance = parse(line, "xadvance");
 
-  glyph g{x, y, width, height, xoffset, yoffset, xadvance};
+  glyph g{x, y, z, width, height, xoffset, yoffset, xadvance};
   glyphs[id] = g;
 }
 
 
-void Text::RenderGlyph(Shader::Textured::VertexArray &vertex_data, glyph g, vec2 pos, const col4 &colour) const
+void Font::RenderGlyph(Shader::Textured::VertexArray &vertex_data, glyph g, vec2 pos, const col4 &colour) const
 {
   vec2 pos1{pos.x + g.xoffset, pos.y + g.yoffset};
   vec2 pos2{pos1.x + g.width, pos1.y + g.height};
@@ -112,11 +143,11 @@ void Text::RenderGlyph(Shader::Textured::VertexArray &vertex_data, glyph g, vec2
   vec2 uv1{float(g.x), float(g.y)};
   vec2 uv2{float(g.x + g.width), float(g.y + g.height)};
 
-  vertex_data.DrawQuad(pos1, uv1, pos2, uv2, colour, layer);
+  vertex_data.DrawQuad(pos1, uv1, pos2, uv2, colour, g.z + layer);
 }
 
 
-vec2 Text::RenderString(Shader::Textured::VertexArray &vertex_data, const std::string str, vec2 pos, col4 colour) const
+vec2 Font::RenderString(Shader::Textured::VertexArray &vertex_data, const std::string str, vec2 pos, col4 colour) const
 {
   for (char ch : str)
   {
@@ -137,9 +168,59 @@ vec2 Text::RenderString(Shader::Textured::VertexArray &vertex_data, const std::s
   return pos;
 }
 
+///////////////////////////////////////////////////////////////////////////////
+
+
+Text::Text(std::vector<std::string> font_list)
+: font_texture_array(256, 256, 0)
+{
+  const std::string font_path = "../data/fonts/";
+  std::vector<std::string> image_filenames;
+  int layer = 0;
+
+  for (const auto &name : font_list)
+  {
+    const std::string font_filename = font_path + name + ".fnt";
+    Font font(font_filename, layer);
+
+    for (auto image_filename : font.image_filenames)
+    {
+      image_filenames.push_back(font_path + image_filename);
+      layer++;
+    }
+
+    fonts.insert({name, std::move(font)});
+  }
+
+
+  font_texture_array.ResetLayerCount(layer);
+  layer = 0;
+  for (auto image_filename : image_filenames)
+  {
+    font_texture_array.LoadLayer(layer, image_filename);
+    layer++;
+  }
+}
+
+
+const Font &Text::GetFont(const std::string &name) const
+{
+  return fonts.at(name);
+}
+
+
+ArrayTexture &Text::GetTexture()
+{
+  return font_texture_array;
+}
+
+
+///////////////////////////////////////////////////////////////////////////////
+
+
 const TextBox::endl_t TextBox::endl = {};
 
-TextBox::TextBox(Shader::Textured::VertexArray &vertex_array, const Text &font, const vec2 start_pos)
+TextBox::TextBox(Shader::Textured::VertexArray &vertex_array, const Font &font, const vec2 start_pos)
 : font(&font)
 , vertex_array(vertex_array)
 , colour(1.0f, 1.0f, 1.0f, 1.0f)
@@ -150,7 +231,7 @@ TextBox::TextBox(Shader::Textured::VertexArray &vertex_array, const Text &font, 
 }
 
 
-TextBox &TextBox::operator<<(Text &font)
+TextBox &TextBox::operator<<(const Font &font)
 {
   this->font = &font;
   return *this;

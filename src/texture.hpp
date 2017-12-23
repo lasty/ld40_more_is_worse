@@ -29,6 +29,10 @@ public:
   ArrayTexture(int width, int height, int layers);
   ~ArrayTexture();
 
+  void Create(int width, int height, int layers);
+  void Destroy();
+  void ResetLayerCount(int new_layers);
+
   void LoadLayerSurface(int layer, struct SDL_Surface *surf);
   void LoadLayer(int layer, std::string filename);
   void LoadLayersXCF(int layer_count, std::string filename);

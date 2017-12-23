@@ -1,6 +1,7 @@
 
 #include "gl.hpp"
 
+#include <cassert>
 #include <cstring>
 #include <iostream>
 #include <map>
@@ -39,6 +40,8 @@ void opengl_debug_callback(
               //<< " " << GLenum_ToString(source)
               << "]  " << message << std::endl;
   }
+
+  assert(severity == GL_DEBUG_SEVERITY_NOTIFICATION); //catch errors early
 }
 
 

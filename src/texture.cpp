@@ -55,10 +55,25 @@ Texture::~Texture()
 
 
 ArrayTexture::ArrayTexture(int width, int height, int layers)
-: width(width)
-, height(height)
-, layers(layers)
 {
+  Create(width, height, layers);
+}
+
+
+ArrayTexture::~ArrayTexture()
+{
+  Destroy();
+}
+
+
+void ArrayTexture::Create(int width, int height, int layers)
+{
+  this->width = width;
+  this->height = height;
+  this->layers = layers;
+
+  if (layers == 0) return; //Assume they will call ResetLayerCount later
+
   glGenTextures(1, &texture_id);
 
   int mipmap_levels = 1;
@@ -73,11 +88,20 @@ ArrayTexture::ArrayTexture(int width, int height, int layers)
   glTexParameteri(GL_TEXTURE_2D_ARRAY, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
 }
 
-
-ArrayTexture::~ArrayTexture()
+void ArrayTexture::Destroy()
 {
   glBindTexture(GL_TEXTURE_2D_ARRAY, 0);
   glDeleteTextures(1, &texture_id);
+}
+
+
+void ArrayTexture::ResetLayerCount(int new_layers)
+{
+  if (layers == new_layers) return;
+
+  if (layers != 0) Destroy();
+
+  Create(width, height, new_layers);
 }
 
 

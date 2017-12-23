@@ -20,14 +20,9 @@ Renderer::Renderer()
 , green{0.2f, 1.0f, 0.2f, 1.0f}
 , red{0.9f, 0.1f, 0.2f, 1.0f}
 , tan{0.8f, 0.6f, 0.2f, 1.0f}
-, font1("../data/fonts/mono.fnt", 0)
-, font2("../data/fonts/small.fnt", 1)
-, font_texture_array(256, 256, 2)
+, text({"mono", "small"})
 , sprite_texture_array(512, 512, 5)
 {
-
-  font_texture_array.LoadLayer(0, "../data/fonts/mono_0.png");
-  font_texture_array.LoadLayer(1, "../data/fonts/small_0.png");
 
   sprite_texture_array.LoadLayersXCF(5, "../data/images/items1.xcf");
 
@@ -89,10 +84,10 @@ void Renderer::Resize(int width, int height)
 }
 
 
-vec2 Renderer::RenderText(const Text &font, const std::string &str, const vec2 &pos, const col4 &colour)
-{
-  return font.RenderString(text_data, str, pos, colour);
-}
+// vec2 Renderer::RenderText(const Font &font, const std::string &str, const vec2 &pos, const col4 &colour)
+// {
+//   return font.RenderString(text_data, str, pos, colour);
+// }
 
 
 void Renderer::RenderSprite(const Sprite &sprite, const vec2 &pos, const col4 &colour)
@@ -123,10 +118,9 @@ void Renderer::RenderPlayer(const Player &player)
   vec2 facing_circle = player.position + (direction * player.radius);
   lines1.Circle(facing_circle, player.radius / 4.0f, green);
 
-  vec2 label_pos = player.position + vec2{-20.0f, player.radius};
-  RenderText(font2, "Player", label_pos, white);
-  label_pos.y += 20;
-  RenderText(font2, GetHealthText(player.health), label_pos, green);
+  TextBox box{text_data, text.GetFont("small"), player.position + vec2{-20.0f, player.radius}};
+  box << white << "Player" << box.endl
+      << green << GetHealthText(player.health);
 }
 
 
@@ -174,7 +168,8 @@ void Renderer::RenderItem(const Item &item, bool colliding, bool moused_over)
   }
   else
   {
-    RenderText(font2, item.name, item.position + vec2{-20.0f, item.radius}, grey);
+    TextBox box(text_data, text.GetFont("small"), item.position + vec2{-20.0f, item.radius});
+    box << grey << item.name;
   }
 }
 
@@ -220,7 +215,7 @@ void Renderer::RenderItemInfoCard(const Item &item, const vec2 &mouse_pos)
 {
   vec2 infocard_pos = mouse_pos + vec2{10.0f, 20.0f};
 
-  TextBox box(text_data, font2, infocard_pos);
+  TextBox box(text_data, text.GetFont("small"), infocard_pos);
 
   box << white << item.name << box.endl;
 
@@ -299,7 +294,8 @@ void Renderer::RenderMonster(const Monster &monster, bool moused_over)
   }
   else
   {
-    RenderText(font2, monster.name, monster.position + vec2{-20.0f, monster.radius}, grey);
+    TextBox box(text_data, text.GetFont("small"), monster.position + vec2{-20.0f, monster.radius});
+    box << grey << monster.name;
   }
 }
 
@@ -308,7 +304,7 @@ void Renderer::RenderMonsterInfoCard(const Monster &monster, const vec2 &mouse_p
 {
   vec2 infocard_pos = mouse_pos + vec2{10.0f, 20.0f};
 
-  TextBox box(text_data, font2, infocard_pos);
+  TextBox box(text_data, text.GetFont("small"), infocard_pos);
 
   box << white << monster.name << box.endl;
 
@@ -351,30 +347,29 @@ void Renderer::RenderProjectile(const Projectile &projectile)
 
 void Renderer::RenderInventory(std::map<int, Item> inventory)
 {
-  vec2 pos{10.0f, 30.0f};
+  TextBox box(text_data, text.GetFont("small"), {10.0f, 30.0f});
 
-  RenderText(font2, "Inventory: ", pos, white);
-  pos.y += 20.0f;
+  box << white << "Inventory:" << box.endl;
 
   for (auto & [ key, item ] : inventory)
   {
-    std::stringstream ss_item;
-    ss_item << GetInputName(key) << ": " << item.name;
-
-    vec2 pos2 = RenderText(font2, ss_item.str(), pos, grey);
+    box << grey << GetInputName(key) << ": " << item.name;
 
     if (item.has_limited_uses)
     {
-      pos2 = RenderText(font2, GetLimitedUsesText(item, true), pos2, red);
+      box << red << GetLimitedUsesText(item, true);
     }
 
     if (item.has_cooldown and item.cooldown > 0.0f)
     {
-      RenderText(font2, GetCooldownText(item, true), pos2, green);
+      box << green << GetCooldownText(item, true);
     }
 
-    pos.y += 20.0f;
+    box << box.endl;
   }
+
+  auto[box_topleft, box_size] = box.GetRect(5.0f);
+  lines1.Rect(box_topleft, box_size, grey);
 }
 
 
@@ -425,30 +420,36 @@ void Renderer::RenderGame(const GameState &state)
 
 
   vec2 mode_position{10.0f, 700.0f};
-  vec2 mode_line2{10.0f, 730.0f};
+  // vec2 mode_line2{10.0f, 730.0f};
+  TextBox box(text_data, text.GetFont("mono"), mode_position);
+
+  box << text.GetFont("mono") << white;
 
   if (state.drop_mode)
   {
-    RenderText(font1, "Drop Mode", mode_position, white);
+    box << "Drop Mode";
   }
   else
   {
-    RenderText(font1, "Normal Mode", mode_position, white);
+    box << "Normal Mode";
   }
+
+  box << box.endl
+      << text.GetFont("small") << grey;
 
   if (state.drop_mode)
   {
-    RenderText(font2, "Press inventory key to drop items", mode_line2, grey);
+    box << "Press inventory key to drop items";
   }
   else
   {
     if (state.closest_item)
     {
-      RenderText(font2, "Press a new key to pick up this item", mode_line2, grey);
+      box << "Press a new key to pick up this item";
     }
     else
     {
-      RenderText(font2, "Move to item to pick up, or press item's key to activate", mode_line2, grey);
+      box << "Move to item to pick up, or press item's key to activate";
     }
   }
 
@@ -459,7 +460,7 @@ void Renderer::RenderGame(const GameState &state)
   glBindTexture(GL_TEXTURE_2D_ARRAY, sprite_texture_array.texture_id);
 
   glActiveTexture(GL_TEXTURE0);
-  glBindTexture(GL_TEXTURE_2D_ARRAY, font_texture_array.texture_id);
+  glBindTexture(GL_TEXTURE_2D_ARRAY, text.GetTexture().texture_id);
 
   EnableBlend();
 

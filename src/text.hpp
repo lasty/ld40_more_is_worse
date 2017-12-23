@@ -12,6 +12,7 @@ struct glyph
 {
   int x;
   int y;
+  int z;
   int width;
   int height;
   int xoffset;
@@ -20,15 +21,16 @@ struct glyph
 };
 
 
-class Text
+class Font
 {
 public:
   int layer;
   float line_spacing = 0.0f;
 
   std::map<char, glyph> glyphs;
+  std::vector<std::string> image_filenames;
 
-  Text(std::string font_filename, int layer);
+  Font(std::string font_filename, int layer);
 
   void ParseChar(std::string line);
 
@@ -37,10 +39,25 @@ public:
 };
 
 
+class Text
+{
+public:
+  explicit Text(std::vector<std::string> font_list);
+
+private:
+  std::map<std::string, Font> fonts;
+  ArrayTexture font_texture_array;
+
+public:
+  const Font &GetFont(const std::string &name) const;
+  ArrayTexture &GetTexture();
+};
+
+
 class TextBox
 {
 private:
-  const Text *font = nullptr;
+  const Font *font = nullptr;
   Shader::Textured::VertexArray &vertex_array;
 
 public:
@@ -50,9 +67,9 @@ public:
   vec2 cursor_pos;
 
 public:
-  TextBox(Shader::Textured::VertexArray &vertex_array, const Text &font, const vec2 start_pos);
+  TextBox(Shader::Textured::VertexArray &vertex_array, const Font &font, const vec2 start_pos);
 
-  TextBox &operator<<(Text &font);
+  TextBox &operator<<(const Font &font);
 
   TextBox &operator<<(const col4 &colour);
 
