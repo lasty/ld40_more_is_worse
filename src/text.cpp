@@ -71,6 +71,157 @@ std::string parse_string(std::string &line, std::string key)
 }
 
 
+utf8_iterator::utf8_iterator(const std::string &str)
+{
+  in = str.data();
+  in_end = str.data() + str.size();
+  in_next = in;
+}
+
+
+void utf8_iterator::operator++()
+{
+  if (in_next == in)
+  {
+    operator*();
+  }
+
+  in = in_next;
+}
+
+
+char32_t utf8_iterator::operator*()
+{
+  char32_t out[1];
+  char32_t *out_next = nullptr;
+
+  // std::cout << "in=" << in << "  in_end=" << in_end << "in_next=" << in_next << std::endl;
+
+  auto result = conv.in(state, in, in_end, in_next, out, out + 1, out_next);
+
+  // std::cout << "in=" << in << "  in_end=" << in_end << "in_next=" << in_next << std::endl;
+
+  // std::cout << "Got char " << std::hex << out[0] << std::endl;
+
+  if (result == std::codecvt_base::ok or result == std::codecvt_base::partial)
+  {
+    return out[0];
+  }
+
+  std::cout << "codecvt failed with code " << result << std::endl;
+
+  throw std::runtime_error("codecvt failed");
+}
+
+
+utf8_iterator::operator bool() const
+{
+  return in < in_end;
+}
+
+
+#include <cassert>
+
+#include <clocale>
+#include <codecvt>
+#include <cstdlib>
+#include <iostream>
+#include <stdexcept>
+#include <string>
+
+
+void test_utf8()
+{
+  using std::cout;
+  using std::endl;
+
+  std::cout << "Testing utf8 strings." << std::endl;
+
+  std::string str0 = "";
+  {
+    utf8_iterator it{str0};
+    assert(not it);
+  }
+
+  {
+    std::string str1 = "Hello";
+    utf8_iterator it{str1};
+    assert(it);
+    unsigned i = 0;
+    while (it)
+    {
+      std::cout << "*it = " << *it;
+      ++it;
+      i++;
+    }
+
+    assert(i == str1.size());
+  }
+
+  {
+    std::setlocale(LC_ALL, "utf8");
+
+    std::string str2 = "5×9";
+
+    utf8_iterator it{str2};
+    auto c1 = *it;
+    ++it;
+    auto c2 = *it;
+    ++it;
+    auto c3 = *it;
+    ++it;
+    assert(c1 == '5');
+    assert(c2 == 0xd7);
+    assert(c3 == '9');
+    assert(not it);
+  }
+
+  {
+    // allow mblen() to work with UTF-8 multibyte encoding
+    std::setlocale(LC_ALL, "en_US.utf8");
+    // UTF-8 narrow multibyte encoding
+    std::string str = //u8"z\u00df\u6c34\U0001f34c";
+      u8"zß水🍌";
+    // std::cout << str << " is " << str.size() << " bytes, but only "
+    //           << strlen_mb(str) << " characters\n";
+  }
+
+  {
+    cout << "Trying codecvt" << endl;
+
+    std::codecvt_utf8<char32_t> conv;
+    std::mbstate_t state;
+
+    std::string str = "5×9";
+
+
+    const char *from = str.data();
+    const char *from_end = str.data() + str.size();
+    const char *from_next = str.data();
+
+    char32_t out[10] = {0};
+    char32_t *to = out;
+    char32_t *to_end = to + 10;
+    char32_t *to_next = to;
+
+    auto result = conv.in(state, from, from_end, from_next, to, to_end, to_next);
+
+    cout << "result = " << result << endl;
+
+    if (result == std::codecvt_base::ok)
+    {
+      for (int i = 0; i < 10; i++)
+      {
+        cout << "out[" << i << "] =  0x" << std::hex << out[i] << endl;
+      }
+    }
+  }
+
+
+  std::cout << "tests complete" << std::endl;
+}
+
+
 Font::Font(std::string font_filename, int layer)
 : layer(layer)
 {
@@ -147,15 +298,27 @@ void Font::RenderGlyph(Shader::Textured::VertexArray &vertex_data, glyph g, vec2
 }
 
 
-vec2 Font::RenderString(Shader::Textured::VertexArray &vertex_data, const std::string str, vec2 pos, col4 colour) const
+vec2 Font::RenderString(Shader::Textured::VertexArray &vertex_data, const std::string &str, vec2 pos, col4 colour) const
 {
-  for (char ch : str)
+  for (utf8_iterator utf_it(str); utf_it; ++utf_it)
   {
+    auto ch = *utf_it;
+
     auto it = glyphs.find(ch);
     if (it == glyphs.end())
     {
-      pos.x += 32;
-      continue;
+      it = glyphs.find(-1); //try the unknown symbol glyph
+
+      if (it == glyphs.end())
+      {
+        it = glyphs.find('?');
+
+        if (it == glyphs.end())
+        {
+          pos.x += line_spacing;
+          continue;
+        }
+      }
     }
 
     glyph g = it->second;

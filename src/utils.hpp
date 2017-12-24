@@ -46,7 +46,7 @@ public:
   int Int(int min, int max);
   float Float(float min, float max);
 
-  vec2 Position(float min = 0.0f, float max = 1000.0f);
+  vec2 Position(vec2 min, vec2 max);
   col4 Colour();
   col4 ColourVarying(col4 colour);
 

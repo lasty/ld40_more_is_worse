@@ -20,7 +20,8 @@ Renderer::Renderer()
 , green{0.2f, 1.0f, 0.2f, 1.0f}
 , red{0.9f, 0.1f, 0.2f, 1.0f}
 , tan{0.8f, 0.6f, 0.2f, 1.0f}
-, text({"mono", "small"})
+, text({"dejavu_sans_18px", "mono", "small"})
+, fonts{text.GetFont("mono"), text.GetFont("small"), text.GetFont("dejavu_sans_18px")}
 , sprite_texture_array(512, 512, 5)
 {
 
@@ -118,7 +119,7 @@ void Renderer::RenderPlayer(const Player &player)
   vec2 facing_circle = player.position + (direction * player.radius);
   lines1.Circle(facing_circle, player.radius / 4.0f, green);
 
-  TextBox box{text_data, text.GetFont("small"), player.position + vec2{-20.0f, player.radius}};
+  TextBox box{text_data, fonts.small, player.position + vec2{-20.0f, player.radius}};
   box << white << "Player" << box.endl
       << green << GetHealthText(player.health);
 }
@@ -168,7 +169,7 @@ void Renderer::RenderItem(const Item &item, bool colliding, bool moused_over)
   }
   else
   {
-    TextBox box(text_data, text.GetFont("small"), item.position + vec2{-20.0f, item.radius});
+    TextBox box(text_data, fonts.small, item.position + vec2{-20.0f, item.radius});
     box << grey << item.name;
   }
 }
@@ -181,8 +182,7 @@ std::string GetLimitedUsesText(const Item &item, bool inv_view)
   std::stringstream ss;
   if (inv_view)
   {
-    unsigned char mult_symbol = 215;
-    ss << "  " << mult_symbol << item.uses_left;
+    ss << u8"  ×" << item.uses_left;
   }
   else
   {
@@ -215,7 +215,7 @@ void Renderer::RenderItemInfoCard(const Item &item, const vec2 &mouse_pos)
 {
   vec2 infocard_pos = mouse_pos + vec2{10.0f, 20.0f};
 
-  TextBox box(text_data, text.GetFont("small"), infocard_pos);
+  TextBox box(text_data, fonts.small, infocard_pos);
 
   box << white << item.name << box.endl;
 
@@ -294,7 +294,7 @@ void Renderer::RenderMonster(const Monster &monster, bool moused_over)
   }
   else
   {
-    TextBox box(text_data, text.GetFont("small"), monster.position + vec2{-20.0f, monster.radius});
+    TextBox box(text_data, fonts.small, monster.position + vec2{-20.0f, monster.radius});
     box << grey << monster.name;
   }
 }
@@ -304,7 +304,7 @@ void Renderer::RenderMonsterInfoCard(const Monster &monster, const vec2 &mouse_p
 {
   vec2 infocard_pos = mouse_pos + vec2{10.0f, 20.0f};
 
-  TextBox box(text_data, text.GetFont("small"), infocard_pos);
+  TextBox box(text_data, fonts.small, infocard_pos);
 
   box << white << monster.name << box.endl;
 
@@ -347,7 +347,7 @@ void Renderer::RenderProjectile(const Projectile &projectile)
 
 void Renderer::RenderInventory(std::map<int, Item> inventory)
 {
-  TextBox box(text_data, text.GetFont("small"), {10.0f, 30.0f});
+  TextBox box(text_data, fonts.small, {10.0f, 30.0f});
 
   box << white << "Inventory:" << box.endl;
 
@@ -419,11 +419,10 @@ void Renderer::RenderGame(const GameState &state)
   RenderPlayer(state.player);
 
 
-  vec2 mode_position{10.0f, 700.0f};
-  // vec2 mode_line2{10.0f, 730.0f};
-  TextBox box(text_data, text.GetFont("mono"), mode_position);
+  vec2 mode_position{10.0f, 600.0f};
+  TextBox box(text_data, fonts.big, mode_position);
 
-  box << text.GetFont("mono") << white;
+  box << fonts.big << white;
 
   if (state.drop_mode)
   {
@@ -435,7 +434,7 @@ void Renderer::RenderGame(const GameState &state)
   }
 
   box << box.endl
-      << text.GetFont("small") << grey;
+      << fonts.small << grey;
 
   if (state.drop_mode)
   {
@@ -453,8 +452,14 @@ void Renderer::RenderGame(const GameState &state)
     }
   }
 
-  RenderInventory(state.player.KeyBindInventory);
+  auto qbf = "The© quick brown fox™ jumps over the lazy dog.";
+  box << white << box.endl
+      << fonts.big << qbf << box.endl
+      << fonts.small << qbf << box.endl
+      << fonts.unicode << qbf << box.endl;
 
+
+  RenderInventory(state.player.KeyBindInventory);
 
   glActiveTexture(GL_TEXTURE1);
   glBindTexture(GL_TEXTURE_2D_ARRAY, sprite_texture_array.texture_id);

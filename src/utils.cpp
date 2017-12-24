@@ -23,9 +23,9 @@ float Random::Float(float min, float max)
 }
 
 
-vec2 Random::Position(float min, float max)
+vec2 Random::Position(vec2 min, vec2 max)
 {
-  return {Float(min, max), Float(min, max)};
+  return {Float(min.x, max.x), Float(min.y, max.y)};
 }
 
 

@@ -41,6 +41,11 @@ private:
 
   Text text;
 
+  struct
+  {
+    const Font &big, &small, &unicode;
+  } fonts;
+
   ArrayTexture sprite_texture_array;
 
   SpriteFactory sprite_factory;

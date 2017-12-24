@@ -186,26 +186,46 @@ void main_game()
 }
 
 
-//#define CATCH_EXCEPTIONS true
+constexpr bool RUN_TESTS = false;
+
+void test_utf8();
+
+void run_tests()
+{
+  std::cout << "CPP version: " << CPPVersion() << std::endl;
+
+  test_utf8();
+}
+
+constexpr bool CATCH_EXCEPTIONS = true;
+
 
 int main([[maybe_unused]] int argc, [[maybe_unused]] char *argv[])
 {
+  if constexpr (RUN_TESTS)
+  {
+    run_tests();
+    return EXIT_SUCCESS;
+  }
 
   std::cout << "CPP version: " << CPPVersion() << std::endl;
 
-
-#if CATCH_EXCEPTIONS
-  try
+  if constexpr (CATCH_EXCEPTIONS)
   {
+    try
+    {
+      main_game();
+    }
+    catch (std::exception &e)
+    {
+      std::cout << "std::exception thrown -- " << e.what() << std::endl;
+    }
+  }
+  else
+  {
+
     main_game();
   }
-  catch (std::exception &e)
-  {
-    std::cout << "std::exception thrown -- " << e.what() << std::endl;
-  }
-#else
-  main_game();
-#endif
 
   return EXIT_SUCCESS;
 }

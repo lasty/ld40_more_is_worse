@@ -370,16 +370,19 @@ void Game::NewGame()
   constexpr int num_items = 15;
   constexpr int num_monsters = 10;
 
+  const vec2 min_pos = {100.0f, 0.0f};
+  const vec2 max_pos = {1200.0f, 500.0f};
+
   for (int i = 0; i < num_items; i++)
   {
-    Item item = GenerateRandomItem(random.Position());
+    Item item = GenerateRandomItem(random.Position(min_pos, max_pos));
 
     gamestate.world_items.push_back(item);
   }
 
   for (int i = 0; i < num_monsters; i++)
   {
-    Monster monster = GenerateRandomMonster(random.Position());
+    Monster monster = GenerateRandomMonster(random.Position(min_pos, max_pos));
 
     gamestate.world_monsters.push_back(monster);
   }
