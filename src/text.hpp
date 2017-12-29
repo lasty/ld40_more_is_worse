@@ -50,7 +50,7 @@ public:
   std::map<char32_t, glyph> glyphs;
   std::vector<std::string> image_filenames;
 
-  Font(std::string font_filename, int layer);
+  Font(std::string font_filename);
 
   void ParseChar(std::string line);
 
@@ -59,17 +59,21 @@ public:
 };
 
 
-class Text
+class FontLibrary
 {
 public:
-  explicit Text(std::vector<std::string> font_list);
+  FontLibrary(const std::string &font_path);
 
 private:
   std::map<std::string, Font> fonts;
   ArrayTexture font_texture_array;
 
 public:
-  const Font &GetFont(const std::string &name) const;
+  Font big;
+  Font small;
+  Font unicode;
+  int max_layers = 0;
+
   ArrayTexture &GetTexture();
 };
 

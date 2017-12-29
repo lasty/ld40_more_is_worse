@@ -61,6 +61,18 @@ void ProcessEvents(Game *game, [[maybe_unused]] Renderer *renderer)
 }
 
 
+class Timer
+{
+public:
+  uint32_t time_start = SDL_GetTicks();
+  uint32_t Report() const { return SDL_GetTicks() - time_start; };
+};
+
+std::ostream &operator<<(std::ostream &out, const Timer &timer)
+{
+  return out << timer.Report() << "ms";
+}
+
 void main_game()
 {
   std::cout << "Hello, world" << std::endl;
@@ -86,10 +98,10 @@ void main_game()
   SDL_GL_SetAttribute(SDL_GL_CONTEXT_FLAGS, SDL_GL_CONTEXT_DEBUG_FLAG);
   SDL_GL_SetAttribute(SDL_GL_CONTEXT_PROFILE_MASK, SDL_GL_CONTEXT_PROFILE_CORE);
 
-  std::cout << "Requestiong OpenGL Context version " << GL_MAJOR << "." << GL_MINOR
+  std::cout << "Requesting OpenGL Context version " << GL_MAJOR << "." << GL_MINOR
             << std::endl;
 
-  auto timer_1 = SDL_GetTicks();
+  Timer timer_window;
 
   unsigned int window_flags = SDL_WINDOW_OPENGL;
   SDL_Window *window = SDL_CreateWindow("ld40", 50, 50, WIDTH, HEIGHT, window_flags);
@@ -99,7 +111,7 @@ void main_game()
     throw std::runtime_error("failed to create window");
   }
 
-  std::cout << "Created window in " << SDL_GetTicks() - timer_1 << "ms" << std::endl;
+  std::cout << "Created window in " << timer_window << std::endl;
 
   auto glcontext = SDL_GL_CreateContext(window);
 
@@ -142,11 +154,16 @@ void main_game()
   SDL_GL_SetSwapInterval(SWAP_INTERVAL);
 
   {
+    Timer timer_game_start;
     Game game;
     game.NewGame();
+    std::cout << "Game state created in " << timer_game_start << std::endl;
 
+
+    Timer timer_renderer_start;
     Renderer renderer;
     renderer.Resize(WIDTH, HEIGHT);
+    std::cout << "Renderer created in " << timer_renderer_start << std::endl;
 
 
 #if !NDEBUG

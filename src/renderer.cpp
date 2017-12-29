@@ -20,11 +20,9 @@ Renderer::Renderer()
 , green{0.2f, 1.0f, 0.2f, 1.0f}
 , red{0.9f, 0.1f, 0.2f, 1.0f}
 , tan{0.8f, 0.6f, 0.2f, 1.0f}
-, text({"dejavu_sans_18px", "mono", "small"})
-, fonts{text.GetFont("mono"), text.GetFont("small"), text.GetFont("dejavu_sans_18px")}
+, fonts("../data/fonts/")
 , sprite_texture_array(512, 512, 5)
 {
-
   sprite_texture_array.LoadLayersXCF(5, "../data/images/items1.xcf");
 
   GL::CheckError();
@@ -33,6 +31,12 @@ Renderer::Renderer()
 
 Renderer::~Renderer()
 {
+  GL::CheckError();
+
+  glUseProgram(0);
+  glBindVertexArray(0);
+
+  GL::CheckError();
 }
 
 
@@ -83,12 +87,6 @@ void Renderer::Resize(int width, int height)
   line_shader.SetResolution(width, height);
   textured_shader.SetResolution(width, height);
 }
-
-
-// vec2 Renderer::RenderText(const Font &font, const std::string &str, const vec2 &pos, const col4 &colour)
-// {
-//   return font.RenderString(text_data, str, pos, colour);
-// }
 
 
 void Renderer::RenderSprite(const Sprite &sprite, const vec2 &pos, const col4 &colour)
@@ -182,12 +180,10 @@ std::string GetLimitedUsesText(const Item &item, bool inv_view)
   std::stringstream ss;
   if (inv_view)
   {
-    ss << u8"  ×" << item.uses_left;
+    ss << " ";
   }
-  else
-  {
-    ss << item.uses_left;
-  }
+
+  ss << u8" ×" << item.uses_left;
 
   return ss.str();
 }
@@ -328,11 +324,6 @@ void Renderer::RenderMonsterInfoCard(const Monster &monster, const vec2 &mouse_p
 
   box << grey << "Health " << green << GetHealthText(monster.health) << box.endl;
 
-
-  // const vec2 box_border = {5.0f, 5.0f};
-  // const vec2 box_topleft = box.top_left - box_border;
-  // const vec2 box_size = box.GetSize() + box_border * 2;
-
   auto[box_topleft, box_size] = box.GetRect(5.0f);
 
   lines1.Rect(box_topleft, box_size, red);
@@ -465,7 +456,7 @@ void Renderer::RenderGame(const GameState &state)
   glBindTexture(GL_TEXTURE_2D_ARRAY, sprite_texture_array.texture_id);
 
   glActiveTexture(GL_TEXTURE0);
-  glBindTexture(GL_TEXTURE_2D_ARRAY, text.GetTexture().texture_id);
+  glBindTexture(GL_TEXTURE_2D_ARRAY, fonts.GetTexture().texture_id);
 
   EnableBlend();
 

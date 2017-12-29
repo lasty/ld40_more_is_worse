@@ -110,8 +110,8 @@ void ArrayTexture::LoadLayerSurface(int layer, SDL_Surface *surf)
   assert(layer >= 0 and layer < layers);
   assert(surf);
 
-  std::cout << "width " << surf->w << "  height " << surf->h << "  layer " << layer << std::endl;
-  std::cout << "Bytes per pixel " << (int)surf->format->BytesPerPixel << std::endl;
+  // std::cout << "width " << surf->w << "  height " << surf->h << "  layer " << layer << std::endl;
+  // std::cout << "Bytes per pixel " << (int)surf->format->BytesPerPixel << std::endl;
 
   assert(surf->w == width);
   assert(surf->h == height);

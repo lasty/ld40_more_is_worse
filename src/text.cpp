@@ -21,7 +21,6 @@ int parse(std::string line, std::string key)
   //   std::cout << "parsing int key '" << key << "' in string: \n"
   //             << line << std::endl;
 
-
   auto pos1 = line.find(key);
   assert(pos1 != std::string::npos);
 
@@ -48,8 +47,8 @@ int parse(std::string line, std::string key)
 
 std::string parse_string(std::string &line, std::string key)
 {
-  std::cout << "parsing string key '" << key << "' in string: \n"
-            << line << std::endl;
+  // std::cout << "parsing string key '" << key << "' in string: \n"
+  //           << line << std::endl;
 
   auto pos1 = line.find(key);
   assert(pos1 != std::string::npos);
@@ -65,7 +64,7 @@ std::string parse_string(std::string &line, std::string key)
 
   std::string thestring = line.substr(pos3 + 1, (pos4 - pos3) - 1);
 
-  std::cout << "got string: " << thestring << std::endl;
+  // std::cout << "got string: " << thestring << std::endl;
 
   return thestring;
 }
@@ -222,8 +221,7 @@ void test_utf8()
 }
 
 
-Font::Font(std::string font_filename, int layer)
-: layer(layer)
+Font::Font(std::string font_filename)
 {
   //Parse font metadata
 
@@ -334,45 +332,34 @@ vec2 Font::RenderString(Shader::Textured::VertexArray &vertex_data, const std::s
 ///////////////////////////////////////////////////////////////////////////////
 
 
-Text::Text(std::vector<std::string> font_list)
+FontLibrary::FontLibrary(const std::string &font_path)
 : font_texture_array(256, 256, 0)
+, big(font_path + "mono.fnt")
+, small(font_path + "small.fnt")
+, unicode(font_path + "dejavu_sans_18px.fnt")
 {
-  const std::string font_path = "../data/fonts/";
+  int layers = 0;
   std::vector<std::string> image_filenames;
-  int layer = 0;
 
-  for (const auto &name : font_list)
+  const auto process_font = [&layers, &image_filenames](Font &font) {
+    font.layer = layers;
+    layers += font.image_filenames.size();
+    image_filenames.insert(image_filenames.end(), font.image_filenames.begin(), font.image_filenames.end());
+  };
+
+  process_font(big);
+  process_font(small);
+  process_font(unicode);
+
+  font_texture_array.ResetLayerCount(layers);
+  for (unsigned i = 0; i < image_filenames.size(); i++)
   {
-    const std::string font_filename = font_path + name + ".fnt";
-    Font font(font_filename, layer);
-
-    for (auto image_filename : font.image_filenames)
-    {
-      image_filenames.push_back(font_path + image_filename);
-      layer++;
-    }
-
-    fonts.insert({name, std::move(font)});
-  }
-
-
-  font_texture_array.ResetLayerCount(layer);
-  layer = 0;
-  for (auto image_filename : image_filenames)
-  {
-    font_texture_array.LoadLayer(layer, image_filename);
-    layer++;
+    font_texture_array.LoadLayer(i, font_path + image_filenames[i]);
   }
 }
 
 
-const Font &Text::GetFont(const std::string &name) const
-{
-  return fonts.at(name);
-}
-
-
-ArrayTexture &Text::GetTexture()
+ArrayTexture &FontLibrary::GetTexture()
 {
   return font_texture_array;
 }
@@ -382,6 +369,7 @@ ArrayTexture &Text::GetTexture()
 
 
 const TextBox::endl_t TextBox::endl = {};
+
 
 TextBox::TextBox(Shader::Textured::VertexArray &vertex_array, const Font &font, const vec2 start_pos)
 : font(&font)
