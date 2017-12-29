@@ -6,6 +6,7 @@
 #include <iostream>
 #include <map>
 #include <vector>
+#include <array>
 
 #include "maths_types.hpp"
 #include "to_string.hpp"
@@ -175,11 +176,7 @@ int CreateBuffers()
 {
   GLuint buf_id = 0;
 
-#if OLD_OPENGL
   glGenBuffers(1, &buf_id);
-#else
-  glCreateBuffers(1, &buf_id);
-#endif
 
   return buf_id;
 }
@@ -196,11 +193,7 @@ int CreateVertexArrays()
 {
   GLuint vao_id = 0;
 
-#if OLD_OPENGL
   glGenVertexArrays(1, &vao_id);
-#else
-  glCreateVertexArrays(1, &vao_id);
-#endif
 
   return vao_id;
 }

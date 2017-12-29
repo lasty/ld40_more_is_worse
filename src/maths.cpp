@@ -3,6 +3,7 @@
 
 #include <cassert>
 #include <stdexcept>
+#include <algorithm>
 
 //Vectors should be packed for use by opengl functions
 static_assert(sizeof(vec2) == sizeof(float) * 2, "vec2 not packed correctly");

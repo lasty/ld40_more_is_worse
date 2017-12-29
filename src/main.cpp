@@ -144,8 +144,14 @@ void main_game()
     std::cout << "(Unknown/Default?)";
   std::cout << std::endl;
 
-
-  GL::Debuging(true);
+  if (GLEW_KHR_debug or GLEW_ARB_debug_output or GLEW_AMD_debug_output)
+  {
+    GL::Debuging(true);
+  }
+  else
+  {
+    std::cout << "Opengl Debugging extension not available." << std::endl;
+  }
 
   int max_array_texture_layers = GL::GetInteger(GL_MAX_ARRAY_TEXTURE_LAYERS);
   std::cout << "Max Array Texture Layers: " << max_array_texture_layers << std::endl;
