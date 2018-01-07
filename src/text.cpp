@@ -334,8 +334,10 @@ vec2 Font::RenderString(Shader::Textured::VertexArray &vertex_data, const std::s
 
 FontLibrary::FontLibrary(const std::string &font_path)
 : font_texture_array(256, 256, 0)
-, big(font_path + "mono.fnt")
+, big(font_path + "roboto_slab_18px.fnt")
+, big_mono(font_path + "mono.fnt")
 , small(font_path + "small.fnt")
+, small_bold(font_path + "small_bold.fnt")
 , unicode(font_path + "dejavu_sans_18px.fnt")
 {
   int layers = 0;
@@ -349,6 +351,9 @@ FontLibrary::FontLibrary(const std::string &font_path)
 
   process_font(big);
   process_font(small);
+  // process_font(small2);
+  process_font(small_bold);
+  // process_font(small_serif);
   process_font(unicode);
 
   font_texture_array.ResetLayerCount(layers);

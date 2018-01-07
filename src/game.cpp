@@ -138,6 +138,9 @@ void Game::ProcessKeyInput(int key, bool down)
     std::cout << "Input key: '" << GetInputName(key) << "'  "
               << (down ? "(Pressed)" : "(Released)") << std::endl;
 
+  if (key == SDLK_LSHIFT) debug.flag1 = down;
+  if (key == SDLK_RSHIFT) debug.flag2 = down;
+
   if (not gamestate.drop_mode)
   {
     auto it = gamestate.player.KeyBindInventory.find(key);

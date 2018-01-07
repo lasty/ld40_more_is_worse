@@ -1,6 +1,7 @@
 #pragma once
 
 #include <map>
+#include <memory>
 #include <vector>
 
 #include "game.hpp"
@@ -23,6 +24,7 @@ class Renderer
 {
 private:
   GLState gl_state;
+  vec2 resolution{};
 
   Shader::Line line_shader;
   Shader::Line::VertexArray lines1;
@@ -40,6 +42,9 @@ private:
   col4 tan;
 
   FontLibrary fonts;
+
+  std::reference_wrapper<Font> font_infocard_title;
+  std::reference_wrapper<Font> font_infocard_body;
 
   ArrayTexture sprite_texture_array;
 
@@ -75,4 +80,7 @@ public:
   void RenderGame(const GameState &state);
 
   void RenderAll(const Game &game);
+
+
+  void RenderProgressBar(float v);
 };

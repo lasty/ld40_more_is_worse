@@ -21,6 +21,12 @@ public:
 
   Random random;
 
+  struct {
+    bool flag1 = false;
+    bool flag2 = false;
+  } debug;
+
+
 public:
   Game();
 

@@ -1,9 +1,12 @@
 
 # Todo List
 
-* Sprite component with animations?
+* DONE Pick fonts: Small, Small Bold, and a Title/big font?
+* DONE Sprite component with animations?
 
+* TODO Work out how to load fonts/images in background thread
 
+* TODO Code cleanup pass
 
 * Monster class
     * Melee Attacks player when touching

@@ -70,7 +70,9 @@ private:
 
 public:
   Font big;
+  Font big_mono;
   Font small;
+  Font small_bold;
   Font unicode;
   int max_layers = 0;
 

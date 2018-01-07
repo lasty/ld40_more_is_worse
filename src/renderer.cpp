@@ -21,6 +21,8 @@ Renderer::Renderer()
 , red{0.9f, 0.1f, 0.2f, 1.0f}
 , tan{0.8f, 0.6f, 0.2f, 1.0f}
 , fonts("../data/fonts/")
+, font_infocard_title(fonts.small_bold)
+, font_infocard_body(fonts.small)
 , sprite_texture_array(512, 512, 5)
 {
   sprite_texture_array.LoadLayersXCF(5, "../data/images/items1.xcf");
@@ -84,6 +86,9 @@ void Renderer::InvalidateCache()
 
 void Renderer::Resize(int width, int height)
 {
+  resolution.x = width;
+  resolution.y = height;
+
   line_shader.SetResolution(width, height);
   textured_shader.SetResolution(width, height);
 }
@@ -211,9 +216,10 @@ void Renderer::RenderItemInfoCard(const Item &item, const vec2 &mouse_pos)
 {
   vec2 infocard_pos = mouse_pos + vec2{10.0f, 20.0f};
 
-  TextBox box(text_data, fonts.small, infocard_pos);
+  TextBox box(text_data, font_infocard_title, infocard_pos);
 
-  box << white << item.name << box.endl;
+  box << white << item.name << box.endl
+      << font_infocard_body;
 
   switch (item.type)
   {
@@ -300,9 +306,10 @@ void Renderer::RenderMonsterInfoCard(const Monster &monster, const vec2 &mouse_p
 {
   vec2 infocard_pos = mouse_pos + vec2{10.0f, 20.0f};
 
-  TextBox box(text_data, fonts.small, infocard_pos);
+  TextBox box(text_data, font_infocard_title, infocard_pos);
 
-  box << white << monster.name << box.endl;
+  box << white << monster.name << box.endl
+      << font_infocard_body;
 
   switch (monster.type)
   {
@@ -338,9 +345,10 @@ void Renderer::RenderProjectile(const Projectile &projectile)
 
 void Renderer::RenderInventory(std::map<int, Item> inventory)
 {
-  TextBox box(text_data, fonts.small, {10.0f, 30.0f});
+  TextBox box(text_data, font_infocard_title, {10.0f, 30.0f});
 
-  box << white << "Inventory:" << box.endl;
+  box << white << "Inventory:" << box.endl
+      << font_infocard_body;
 
   for (auto & [ key, item ] : inventory)
   {
@@ -367,7 +375,6 @@ void Renderer::RenderInventory(std::map<int, Item> inventory)
 void Renderer::RenderGame(const GameState &state)
 {
   oscilate = sin(state.wallclock * 5.0f);
-
 
   lines1.clear();
   text_data.clear();
@@ -443,11 +450,14 @@ void Renderer::RenderGame(const GameState &state)
     }
   }
 
-  auto qbf = "The© quick brown fox™ jumps over the lazy dog.";
-  box << white << box.endl
-      << fonts.big << qbf << box.endl
-      << fonts.small << qbf << box.endl
-      << fonts.unicode << qbf << box.endl;
+
+  // auto qbf = "The© quick brown fox™ jumps over the lazy dog.";
+  // box << white << box.endl
+  //     << fonts.big << qbf << box.endl
+  //     << fonts.small_bold << qbf << box.endl
+  //     << fonts.small << qbf << box.endl
+  //     << fonts.small2 << qbf << box.endl
+  //     << fonts.unicode << qbf << box.endl;
 
 
   RenderInventory(state.player.KeyBindInventory);
@@ -480,10 +490,56 @@ void Renderer::RenderGame(const GameState &state)
 
 void Renderer::RenderAll(const Game &game)
 {
+  if (game.debug.flag1) return RenderProgressBar(0.2f);
+  if (game.debug.flag2) return RenderProgressBar(0.5f);
+
+
   glClearColor(0.1, 0.2, 0.3, 1.0);
   glClear(GL_COLOR_BUFFER_BIT);
 
+  // font_infocard_body = game.debug.flag1 ? fonts.small2 : fonts.small;
+  // font_infocard_title = game.debug.flag2 ? fonts.small_serif : fonts.small_bold;
+
   RenderGame(game.gamestate);
+
+  GL::CheckError();
+}
+
+
+void Renderer::RenderProgressBar(float v)
+{
+  glClearColor(0.1, 0.2, 0.3, 1.0);
+  glClear(GL_COLOR_BUFFER_BIT);
+
+  col4 black{0.0f, 0.0f, 0.0f, 1.0f};
+
+  float bar_width = 500;
+  float bar_height = 10;
+  float border = 5;
+
+  vec2 middle_screen = resolution / 2.0f;
+
+  vec2 l1 = middle_screen - vec2{bar_width / 2.0f, 0};
+  vec2 l2 = middle_screen + vec2{bar_width / 2.0f, 0};
+
+  vec2 progress = ((l2 - l1) * v) + l1;
+
+  rect r{{l1.x - border, l1.y - border}, {bar_width + border * 2.0f, bar_height + border * 2.0f}};
+
+
+  lines1.clear();
+
+  lines1.Rect(r.position, r.size, white);
+
+  vec2 inc;
+  for (float i = 0; i <= bar_height; i += 1, inc.y += 1.0f)
+  {
+    //    lines1.Line(l1 + inc, black, l2 + inc, black);
+    lines1.Line(l1 + inc, grey, progress + inc, grey);
+  }
+
+  lines1.Update();
+  line_shader.Render(lines1);
 
   GL::CheckError();
 }
