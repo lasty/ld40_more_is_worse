@@ -494,7 +494,7 @@ void Renderer::RenderAll(const Game &game)
 
   if (not fonts.Loaded())
   {
-    float f = fonts.LoadOne();
+    float f = fonts.LoadSome();
 
     return RenderProgressBar(f);
   }
@@ -548,9 +548,9 @@ void Renderer::RenderProgressBar(float v)
 
   for (int i = 0; i <= bar_height; i++)
   {
-    vec2 inc{0.0f, float(i)};
-    lines1.Line(l1 + inc, black, l2 + inc, black);
-    lines1.Line(l1 + inc, grey, progress + inc, grey);
+    vec2 offset{0.0f, float(i)};
+    lines1.Line(l1 + offset, black, l2 + offset, black);
+    lines1.Line(l1 + offset, grey, progress + offset, grey);
   }
 
   lines1.Update();

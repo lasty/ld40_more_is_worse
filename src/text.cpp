@@ -3,9 +3,10 @@
 
 #include <cassert>
 #include <fstream>
-
 #include <iostream>
 #include <sstream>
+
+#include <SDL_timer.h>
 
 #include "maths.hpp"
 
@@ -353,6 +354,7 @@ void FontLibrary::Reload()
   font_queue.clear();
   font_iterator = 0;
   fonts.clear();
+  loading_timer = SDL_GetTicks();
 
   font_queue.push_back("roboto_slab_18px");
   font_queue.push_back("mono");
@@ -364,7 +366,7 @@ void FontLibrary::Reload()
 
 float FontLibrary::LoadOne()
 {
-  std::cout << "[FONTS] LoadingOne()" << std::endl;
+  // std::cout << "[FONTS] LoadingOne()" << std::endl;
   if (font_queue.empty())
   {
     if (image_queue.empty())
@@ -373,14 +375,16 @@ float FontLibrary::LoadOne()
       return 1.0f;
     }
 
-    std::cout << "[FONTS] iterator is: " << font_iterator << "  image queue size is: " << image_queue.size() << std::endl;
+    // std::cout << "[FONTS] iterator is: " << font_iterator << "  image queue size is: " << image_queue.size() << std::endl;
 
     if (font_iterator == image_queue.size())
     {
       font_iterator = 0;
       image_queue.clear();
 
-      std::cout << "[FONTS] All done." << std::endl;
+      auto ms = SDL_GetTicks() - loading_timer;
+
+      std::cout << "[FONTS] All done.  Loading took " << ms << "ms" << std::endl;
 
       all_done = true;
       return 1.0f;
@@ -388,7 +392,7 @@ float FontLibrary::LoadOne()
 
     font_texture_array.LoadLayer(font_iterator, font_path + image_queue.at(font_iterator));
 
-    std::cout << "[FONTS] Load texture [" << font_iterator << "]  ->  " << font_path + image_queue.at(font_iterator) << std::endl;
+    // std::cout << "[FONTS] Load texture [" << font_iterator << "]  ->  " << font_path + image_queue.at(font_iterator) << std::endl;
 
     font_iterator++;
 
@@ -424,6 +428,18 @@ float FontLibrary::LoadOne()
   }
 
   return 0.1f;
+}
+
+float FontLibrary::LoadSome(unsigned ms_wait)
+{
+  unsigned long start_time = SDL_GetTicks();
+  float f = 1.0f;
+
+  while ((not Loaded()) and (SDL_GetTicks() - start_time) < ms_wait)
+  {
+    f = LoadOne();
+  }
+  return f;
 }
 
 

@@ -69,10 +69,12 @@ private:
 
   std::vector<std::string> font_queue;
   std::map<std::string, Font> fonts;
-  
+
   std::vector<std::string> image_queue;
   unsigned int font_iterator = 0;
   ArrayTexture font_texture_array;
+
+  unsigned long loading_timer = 0;
 
   bool all_done = false;
 public:
@@ -82,6 +84,7 @@ public:
   void Reload();
 
   float LoadOne();
+  float LoadSome(unsigned ms_wait = (1000/60));
 
   void ReloadAllNow();
 
