@@ -521,8 +521,10 @@ void Renderer::RenderAll(const Game &game)
 
 void Renderer::RenderProgressBar(float v)
 {
-  glClearColor(0.2, 0.3, 0.3, 1.0);
+  glClearColor(0.1, 0.2, 0.3, 1.0);
   glClear(GL_COLOR_BUFFER_BIT);
+
+  EnableBlend();
 
   col4 black{0.0f, 0.0f, 0.0f, 1.0f};
 
@@ -544,10 +546,10 @@ void Renderer::RenderProgressBar(float v)
 
   lines1.Rect(r.position, r.size, white);
 
-  vec2 inc;
-  for (float i = 0; i <= bar_height; i += 1, inc.y += 1.0f)
+  for (int i = 0; i <= bar_height; i++)
   {
-    //    lines1.Line(l1 + inc, black, l2 + inc, black);
+    vec2 inc{0.0f, float(i)};
+    lines1.Line(l1 + inc, black, l2 + inc, black);
     lines1.Line(l1 + inc, grey, progress + inc, grey);
   }
 
