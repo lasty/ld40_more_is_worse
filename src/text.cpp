@@ -333,39 +333,119 @@ vec2 Font::RenderString(Shader::Textured::VertexArray &vertex_data, const std::s
 
 
 FontLibrary::FontLibrary(const std::string &font_path)
-: font_texture_array(256, 256, 0)
-, big(font_path + "roboto_slab_18px.fnt")
-, big_mono(font_path + "mono.fnt")
-, small(font_path + "small.fnt")
-, small_bold(font_path + "small_bold.fnt")
-, unicode(font_path + "dejavu_sans_18px.fnt")
+: font_path(font_path)
+, font_texture_array(256, 256, 0)
+
 {
-  int layers = 0;
-  std::vector<std::string> image_filenames;
+  Reload();
+}
 
-  const auto process_font = [&layers, &image_filenames](Font &font) {
-    font.layer = layers;
-    layers += font.image_filenames.size();
-    image_filenames.insert(image_filenames.end(), font.image_filenames.begin(), font.image_filenames.end());
-  };
 
-  process_font(big);
-  process_font(small);
-  // process_font(small2);
-  process_font(small_bold);
-  // process_font(small_serif);
-  process_font(unicode);
+bool FontLibrary::Loaded() const
+{
+  return all_done;
+}
 
-  font_texture_array.ResetLayerCount(layers);
-  for (unsigned i = 0; i < image_filenames.size(); i++)
+
+void FontLibrary::Reload()
+{
+  all_done = false;
+  font_queue.clear();
+  font_iterator = 0;
+  fonts.clear();
+
+  font_queue.push_back("roboto_slab_18px");
+  font_queue.push_back("mono");
+  font_queue.push_back("small");
+  font_queue.push_back("small_bold");
+  font_queue.push_back("dejavu_sans_18px");
+}
+
+
+float FontLibrary::LoadOne()
+{
+  std::cout << "[FONTS] LoadingOne()" << std::endl;
+  if (font_queue.empty())
   {
-    font_texture_array.LoadLayer(i, font_path + image_filenames[i]);
+    if (image_queue.empty())
+    {
+      std::cout << "Warning, LoadOne called when there is no work left" << std::endl;
+      return 1.0f;
+    }
+
+    std::cout << "[FONTS] iterator is: " << font_iterator << "  image queue size is: " << image_queue.size() << std::endl;
+
+    if (font_iterator == image_queue.size())
+    {
+      font_iterator = 0;
+      image_queue.clear();
+
+      std::cout << "[FONTS] All done." << std::endl;
+
+      all_done = true;
+      return 1.0f;
+    }
+
+    font_texture_array.LoadLayer(font_iterator, font_path + image_queue.at(font_iterator));
+
+    std::cout << "[FONTS] Load texture [" << font_iterator << "]  ->  " << font_path + image_queue.at(font_iterator) << std::endl;
+
+    font_iterator++;
+
+    return (float(font_iterator) / float(image_queue.size()));
   }
+
+  std::string fontname = font_queue.front();
+  std::string font_filename = font_path + fontname + ".fnt";
+  font_queue.erase(font_queue.begin());
+
+  fonts.emplace(fontname, Font(font_filename));
+
+  std::cout << "[FONTS] Loaded Font " << fontname << std::endl;
+
+
+  if (font_queue.empty())
+  {
+    image_queue.clear();
+    int layers = 0;
+
+    for (auto &it : fonts)
+    {
+      auto &font = it.second;
+      font.layer = layers;
+      layers += font.image_filenames.size();
+      image_queue.insert(image_queue.end(), font.image_filenames.begin(), font.image_filenames.end());
+    }
+
+    font_texture_array.ResetLayerCount(layers);
+    font_iterator = 0;
+
+    std::cout << "[FONTS] Finished font list, num layers is: " << layers << "  image queue size is: " << image_queue.size() << std::endl;
+  }
+
+  return 0.1f;
+}
+
+
+void FontLibrary::ReloadAllNow()
+{
+  while (not Loaded())
+  {
+    LoadOne();
+  }
+}
+
+
+const Font &FontLibrary::GetFont(const std::string &name) const
+{
+  assert(Loaded());
+  return fonts.at(name);
 }
 
 
 ArrayTexture &FontLibrary::GetTexture()
 {
+  assert(Loaded());
   return font_texture_array;
 }
 

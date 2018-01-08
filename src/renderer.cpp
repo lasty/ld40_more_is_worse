@@ -21,8 +21,7 @@ Renderer::Renderer()
 , red{0.9f, 0.1f, 0.2f, 1.0f}
 , tan{0.8f, 0.6f, 0.2f, 1.0f}
 , fonts("../data/fonts/")
-, font_infocard_title(fonts.small_bold)
-, font_infocard_body(fonts.small)
+
 , sprite_texture_array(512, 512, 5)
 {
   sprite_texture_array.LoadLayersXCF(5, "../data/images/items1.xcf");
@@ -122,7 +121,7 @@ void Renderer::RenderPlayer(const Player &player)
   vec2 facing_circle = player.position + (direction * player.radius);
   lines1.Circle(facing_circle, player.radius / 4.0f, green);
 
-  TextBox box{text_data, fonts.small, player.position + vec2{-20.0f, player.radius}};
+  TextBox box{text_data, *font_small, player.position + vec2{-20.0f, player.radius}};
   box << white << "Player" << box.endl
       << green << GetHealthText(player.health);
 }
@@ -172,7 +171,7 @@ void Renderer::RenderItem(const Item &item, bool colliding, bool moused_over)
   }
   else
   {
-    TextBox box(text_data, fonts.small, item.position + vec2{-20.0f, item.radius});
+    TextBox box(text_data, *font_small, item.position + vec2{-20.0f, item.radius});
     box << grey << item.name;
   }
 }
@@ -216,10 +215,10 @@ void Renderer::RenderItemInfoCard(const Item &item, const vec2 &mouse_pos)
 {
   vec2 infocard_pos = mouse_pos + vec2{10.0f, 20.0f};
 
-  TextBox box(text_data, font_infocard_title, infocard_pos);
+  TextBox box(text_data, *font_infocard_title, infocard_pos);
 
   box << white << item.name << box.endl
-      << font_infocard_body;
+      << *font_infocard_body;
 
   switch (item.type)
   {
@@ -296,7 +295,7 @@ void Renderer::RenderMonster(const Monster &monster, bool moused_over)
   }
   else
   {
-    TextBox box(text_data, fonts.small, monster.position + vec2{-20.0f, monster.radius});
+    TextBox box(text_data, *font_small, monster.position + vec2{-20.0f, monster.radius});
     box << grey << monster.name;
   }
 }
@@ -306,10 +305,10 @@ void Renderer::RenderMonsterInfoCard(const Monster &monster, const vec2 &mouse_p
 {
   vec2 infocard_pos = mouse_pos + vec2{10.0f, 20.0f};
 
-  TextBox box(text_data, font_infocard_title, infocard_pos);
+  TextBox box(text_data, *font_infocard_title, infocard_pos);
 
   box << white << monster.name << box.endl
-      << font_infocard_body;
+      << *font_infocard_body;
 
   switch (monster.type)
   {
@@ -345,10 +344,10 @@ void Renderer::RenderProjectile(const Projectile &projectile)
 
 void Renderer::RenderInventory(std::map<int, Item> inventory)
 {
-  TextBox box(text_data, font_infocard_title, {10.0f, 30.0f});
+  TextBox box(text_data, *font_infocard_title, {10.0f, 30.0f});
 
   box << white << "Inventory:" << box.endl
-      << font_infocard_body;
+      << *font_infocard_body;
 
   for (auto & [ key, item ] : inventory)
   {
@@ -418,9 +417,9 @@ void Renderer::RenderGame(const GameState &state)
 
 
   vec2 mode_position{10.0f, 600.0f};
-  TextBox box(text_data, fonts.big, mode_position);
+  TextBox box(text_data, *font_big, mode_position);
 
-  box << fonts.big << white;
+  box << white;
 
   if (state.drop_mode)
   {
@@ -432,7 +431,7 @@ void Renderer::RenderGame(const GameState &state)
   }
 
   box << box.endl
-      << fonts.small << grey;
+      << *font_small << grey;
 
   if (state.drop_mode)
   {
@@ -491,7 +490,21 @@ void Renderer::RenderGame(const GameState &state)
 void Renderer::RenderAll(const Game &game)
 {
   if (game.debug.flag1) return RenderProgressBar(0.2f);
-  if (game.debug.flag2) return RenderProgressBar(0.5f);
+  if (game.debug.flag2) return RenderProgressBar(1.0f);
+
+  if (not fonts.Loaded())
+  {
+    float f = fonts.LoadOne();
+
+    return RenderProgressBar(f);
+  }
+  else
+  {
+    font_infocard_title = &fonts.GetFont("small_bold");
+    font_infocard_body = &fonts.GetFont("small");
+    font_small = &fonts.GetFont("small");
+    font_big = &fonts.GetFont("roboto_slab_18px");
+  }
 
 
   glClearColor(0.1, 0.2, 0.3, 1.0);
@@ -508,7 +521,7 @@ void Renderer::RenderAll(const Game &game)
 
 void Renderer::RenderProgressBar(float v)
 {
-  glClearColor(0.1, 0.2, 0.3, 1.0);
+  glClearColor(0.2, 0.3, 0.3, 1.0);
   glClear(GL_COLOR_BUFFER_BIT);
 
   col4 black{0.0f, 0.0f, 0.0f, 1.0f};

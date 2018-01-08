@@ -43,8 +43,10 @@ private:
 
   FontLibrary fonts;
 
-  std::reference_wrapper<Font> font_infocard_title;
-  std::reference_wrapper<Font> font_infocard_body;
+  const Font * font_infocard_title = nullptr;
+  const Font * font_infocard_body = nullptr;
+  const Font * font_small = nullptr;
+  const Font * font_big = nullptr;
 
   ArrayTexture sprite_texture_array;
 

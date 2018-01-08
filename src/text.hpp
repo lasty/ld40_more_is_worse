@@ -65,17 +65,28 @@ public:
   FontLibrary(const std::string &font_path);
 
 private:
+  std::string font_path;
+
+  std::vector<std::string> font_queue;
   std::map<std::string, Font> fonts;
+  
+  std::vector<std::string> image_queue;
+  unsigned int font_iterator = 0;
   ArrayTexture font_texture_array;
 
+  bool all_done = false;
 public:
-  Font big;
-  Font big_mono;
-  Font small;
-  Font small_bold;
-  Font unicode;
-  int max_layers = 0;
 
+  bool Loaded() const;
+
+  void Reload();
+
+  float LoadOne();
+
+  void ReloadAllNow();
+
+
+  const Font & GetFont(const std::string &name) const;
   ArrayTexture &GetTexture();
 };
 
