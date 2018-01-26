@@ -6,6 +6,7 @@
 #include <iostream>
 #include <sstream>
 
+#include <SDL_image.h>
 #include <SDL_timer.h>
 
 #include "maths.hpp"
@@ -222,11 +223,17 @@ void test_utf8()
 }
 
 
+#if (LOAD_WITH_THREADS)
+Font::Font(std::string font_filename, std::promise<int> num_layers_promise)
+#else
 Font::Font(std::string font_filename)
+#endif
 {
   //Parse font metadata
 
   std::ifstream in{font_filename};
+
+  // std::cout << "Font() font_filename = '" << font_filename << "'" << std::endl;
 
   assert(in);
 
@@ -239,6 +246,10 @@ Font::Font(std::string font_filename)
   assert(starts_with(common_line, "common"));
   line_spacing = parse(common_line, "lineHeight");
   int pages = parse(common_line, "pages");
+
+#if (LOAD_WITH_THREADS)
+  num_layers_promise.set_value(pages);
+#endif
 
   for (int i = 0; i < pages; i++)
   {
@@ -338,6 +349,12 @@ FontLibrary::FontLibrary(const std::string &font_path)
 , font_texture_array(256, 256, 0)
 
 {
+  font_list.push_back("roboto_slab_18px");
+  font_list.push_back("mono");
+  font_list.push_back("small");
+  font_list.push_back("small_bold");
+  font_list.push_back("dejavu_sans_18px");
+
   Reload();
 }
 
@@ -347,88 +364,169 @@ bool FontLibrary::Loaded() const
   return all_done;
 }
 
+#if (LOAD_WITH_THREADS)
+Font make_font(std::string font_filename, std::promise<int> layer_promise)
+{
+  return Font(font_filename, std::move(layer_promise));
+}
+#endif
+
 
 void FontLibrary::Reload()
 {
   all_done = false;
-  font_queue.clear();
   font_iterator = 0;
   fonts.clear();
   loading_timer = SDL_GetTicks();
+  int layers = 0;
 
-  font_queue.push_back("roboto_slab_18px");
-  font_queue.push_back("mono");
-  font_queue.push_back("small");
-  font_queue.push_back("small_bold");
-  font_queue.push_back("dejavu_sans_18px");
+#if (LOAD_WITH_THREADS)
+  std::vector<std::future<int>> layer_futures;
+  layer_futures.reserve(font_list.size());
+
+  std::map<std::string, std::future<Font>> font_load_threads;
+
+  for (auto fontname : font_list)
+  {
+    std::promise<int> layer_promise;
+    layer_futures.push_back(layer_promise.get_future());
+    std::string font_filename = font_path + fontname + ".fnt";
+    font_load_threads.emplace(fontname,
+      std::async(std::launch::async, make_font, font_filename, std::move(layer_promise)));
+  }
+
+  for (auto &f : layer_futures)
+  {
+    layers += f.get();
+  }
+
+  std::cout << "number of layers (threaded method):  " << layers << std::endl;
+  font_texture_array.ResetLayerCount(layers);
+
+
+  for (auto & [ name, future ] : font_load_threads)
+  {
+    fonts.insert({name, future.get()});
+  }
+#else //LOAD_WITH_THREADS
+  for (auto fontname : font_list)
+  {
+    std::string font_filename = font_path + fontname + ".fnt";
+
+    fonts.emplace(fontname, Font(font_filename));
+    layers += fonts.at(fontname).image_filenames.size();
+  }
+
+  std::cout << "number of layers (non-threaded method):  " << layers << std::endl;
+  font_texture_array.ResetLayerCount(layers);
+
+#endif
+
+
+  image_queue.clear();
+  image_queue.reserve(layers);
+
+  layers = 0;
+  for (auto &it : fonts)
+  {
+    auto &font = it.second;
+    font.layer = layers;
+    layers += font.image_filenames.size();
+    image_queue.insert(image_queue.end(), font.image_filenames.begin(), font.image_filenames.end());
+  }
+  std::cout << "number of images (queued): " << layers << std::endl;
+
+#if (LOAD_WITH_THREADS)
+  for (unsigned i = 0; i < image_queue.size(); i++)
+  {
+    const auto filename = font_path + image_queue.at(i);
+    // image_future f{i, std::async(std::launch::async, IMG_Load, filename.c_str())};
+
+    image_future f{
+      i, std::async(std::launch::async, [](std::string filename) {
+        auto surf = IMG_Load(filename.c_str());
+        //std::cout << "[img load thread, " << filename << " -> " << surf << std::endl;
+        // std::this_thread::sleep_for(std::chrono::milliseconds(rand() % 5000 + 1000));
+        return surf;
+      },
+           filename)};
+
+    // std::cout << "async queue load  layer: " << i << "  filename: " << filename << std::endl;
+
+    image_future_queue.push_back(std::move(f));
+  }
+  std::cout << "number of async image loads : " << image_future_queue.size() << std::endl;
+#endif
+
+  font_iterator = 0;
 }
 
 
 float FontLibrary::LoadOne()
 {
   // std::cout << "[FONTS] LoadingOne()" << std::endl;
-  if (font_queue.empty())
+  if (image_queue.empty())
   {
-    if (image_queue.empty())
-    {
-      std::cout << "Warning, LoadOne called when there is no work left" << std::endl;
-      return 1.0f;
-    }
-
-    // std::cout << "[FONTS] iterator is: " << font_iterator << "  image queue size is: " << image_queue.size() << std::endl;
-
-    if (font_iterator == image_queue.size())
-    {
-      font_iterator = 0;
-      image_queue.clear();
-
-      auto ms = SDL_GetTicks() - loading_timer;
-
-      std::cout << "[FONTS] All done.  Loading took " << ms << "ms" << std::endl;
-
-      all_done = true;
-      return 1.0f;
-    }
-
-    font_texture_array.LoadLayer(font_iterator, font_path + image_queue.at(font_iterator));
-
-    // std::cout << "[FONTS] Load texture [" << font_iterator << "]  ->  " << font_path + image_queue.at(font_iterator) << std::endl;
-
-    font_iterator++;
-
-    return (float(font_iterator) / float(image_queue.size()));
+    std::cout << "Warning, LoadOne called when there is no work left" << std::endl;
+    return 1.0f;
   }
 
-  std::string fontname = font_queue.front();
-  std::string font_filename = font_path + fontname + ".fnt";
-  font_queue.erase(font_queue.begin());
+  // std::cout << "[FONTS] iterator is: " << font_iterator << "  image queue size is: " << image_queue.size() << std::endl;
 
-  fonts.emplace(fontname, Font(font_filename));
-
-  std::cout << "[FONTS] Loaded Font " << fontname << std::endl;
-
-
-  if (font_queue.empty())
+  if (font_iterator == image_queue.size())
   {
-    image_queue.clear();
-    int layers = 0;
-
-    for (auto &it : fonts)
-    {
-      auto &font = it.second;
-      font.layer = layers;
-      layers += font.image_filenames.size();
-      image_queue.insert(image_queue.end(), font.image_filenames.begin(), font.image_filenames.end());
-    }
-
-    font_texture_array.ResetLayerCount(layers);
     font_iterator = 0;
+    image_queue.clear();
 
-    std::cout << "[FONTS] Finished font list, num layers is: " << layers << "  image queue size is: " << image_queue.size() << std::endl;
+    auto ms = SDL_GetTicks() - loading_timer;
+
+    std::cout << "[FONTS] All done.  Loading took " << ms << "ms"
+#if (LOAD_WITH_THREADS)
+              << "(threaded)"
+#else
+              << "(non-threaded)"
+#endif
+              << std::endl;
+
+
+    all_done = true;
+    return 1.0f;
   }
 
-  return 0.1f;
+#if (LOAD_WITH_THREADS)
+  for (auto it = image_future_queue.begin(); it != image_future_queue.end(); it++)
+  {
+    auto & [ layer, image_future ] = *it;
+    if (image_future.wait_for(std::chrono::seconds(0)) == std::future_status::ready)
+    {
+      auto surface = image_future.get();
+      if (surface)
+      {
+        font_texture_array.LoadLayerSurface(layer, surface);
+        SDL_free(surface);
+      }
+      else
+      {
+        std::cout << "[Err] image future for layer " << layer << " return nullptr   ("
+                  << SDL_GetError() << ")" << std::endl;
+      }
+
+      font_iterator++;
+      image_future_queue.erase(it);
+      break;
+    }
+  }
+
+#else
+  font_texture_array.LoadLayer(font_iterator, font_path + image_queue.at(font_iterator));
+  // std::cout << "[FONTS] Load texture [" << font_iterator << "]  ->  " << font_path + image_queue.at(font_iterator) << std::endl;
+  font_iterator++;
+#endif
+
+
+  return (float(font_iterator) / float(image_queue.size()));
 }
+
 
 float FontLibrary::LoadSome(unsigned ms_wait)
 {

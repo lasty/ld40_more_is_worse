@@ -1,6 +1,8 @@
 
 #pragma once
 
+#define LOAD_WITH_THREADS true
+
 #include "maths_types.hpp"
 #include "shader_textured.hpp"
 #include "texture.hpp"
@@ -8,6 +10,12 @@
 #include <codecvt>
 #include <map>
 #include <string>
+
+
+#if (LOAD_WITH_THREADS)
+#include <future>
+#include <list>
+#endif
 
 
 struct glyph
@@ -50,7 +58,11 @@ public:
   std::map<char32_t, glyph> glyphs;
   std::vector<std::string> image_filenames;
 
+#if (LOAD_WITH_THREADS)
+  Font(std::string font_filename, std::promise<int> num_layers_promise);
+#else
   Font(std::string font_filename);
+#endif
 
   void ParseChar(std::string line);
 
@@ -67,29 +79,41 @@ public:
 private:
   std::string font_path;
 
-  std::vector<std::string> font_queue;
+  std::vector<std::string> font_list;
   std::map<std::string, Font> fonts;
 
   std::vector<std::string> image_queue;
   unsigned int font_iterator = 0;
+
+#if (LOAD_WITH_THREADS)
+  struct image_future
+  {
+    unsigned layer;
+    std::future<SDL_Surface *> surf_future;
+  };
+
+  std::list<image_future> image_future_queue;
+#endif
+
   ArrayTexture font_texture_array;
+
 
   unsigned long loading_timer = 0;
 
   bool all_done = false;
-public:
 
+public:
   bool Loaded() const;
 
   void Reload();
 
   float LoadOne();
-  float LoadSome(unsigned ms_wait = (1000/60));
+  float LoadSome(unsigned ms_wait = (1000 / 60));
 
   void ReloadAllNow();
 
 
-  const Font & GetFont(const std::string &name) const;
+  const Font &GetFont(const std::string &name) const;
   ArrayTexture &GetTexture();
 };
 
