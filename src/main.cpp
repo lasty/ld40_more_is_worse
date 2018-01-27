@@ -209,15 +209,23 @@ void main_game()
 }
 
 
-constexpr bool RUN_TESTS = false;
+constexpr bool RUN_TESTS = true;
+
+constexpr bool TEST_UTF8 = false;
+constexpr bool TEST_TASKS = true;
 
 void test_utf8();
+void test_tasks();
+
 
 void run_tests()
 {
+  std::cout << "--Running Tests--" << std::endl;
   std::cout << "CPP version: " << CPPVersion() << std::endl;
+  SetStreamFormat(std::cout);
 
-  test_utf8();
+  if (TEST_UTF8) test_utf8();
+  if (TEST_TASKS) test_tasks();
 }
 
 constexpr bool CATCH_EXCEPTIONS = true;

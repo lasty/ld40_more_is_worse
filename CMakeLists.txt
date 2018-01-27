@@ -33,6 +33,7 @@ add_executable(ld40 WIN32
   src/shader_textured.cpp
   src/sound.cpp
   src/sprites.cpp
+  src/tasks.cpp
   src/text.cpp
   src/texture.cpp
   src/texture_xcf.cpp
