@@ -344,8 +344,9 @@ vec2 Font::RenderString(Shader::Textured::VertexArray &vertex_data, const std::s
 ///////////////////////////////////////////////////////////////////////////////
 
 
-FontLibrary::FontLibrary(const std::string &font_path)
+FontLibrary::FontLibrary(const std::string &font_path, TaskManager &task_manager)
 : font_path(font_path)
+, task_manager(task_manager)
 , font_texture_array(256, 256, 0)
 
 {
@@ -440,22 +441,8 @@ void FontLibrary::Reload()
   for (unsigned i = 0; i < image_queue.size(); i++)
   {
     const auto filename = font_path + image_queue.at(i);
-    // image_future f{i, std::async(std::launch::async, IMG_Load, filename.c_str())};
-
-    image_future f{
-      i, std::async(std::launch::async, [](std::string filename) {
-        auto surf = IMG_Load(filename.c_str());
-        //std::cout << "[img load thread, " << filename << " -> " << surf << std::endl;
-        // std::this_thread::sleep_for(std::chrono::milliseconds(rand() % 5000 + 1000));
-        return surf;
-      },
-           filename)};
-
-    // std::cout << "async queue load  layer: " << i << "  filename: " << filename << std::endl;
-
-    image_future_queue.push_back(std::move(f));
+    task_manager.AddTask(new ImageLoadTask(filename, font_texture_array, i));
   }
-  std::cout << "number of async image loads : " << image_future_queue.size() << std::endl;
 #endif
 
   font_iterator = 0;
@@ -494,28 +481,7 @@ float FontLibrary::LoadOne()
   }
 
 #if (LOAD_WITH_THREADS)
-  for (auto it = image_future_queue.begin(); it != image_future_queue.end(); it++)
-  {
-    auto & [ layer, image_future ] = *it;
-    if (image_future.wait_for(std::chrono::seconds(0)) == std::future_status::ready)
-    {
-      auto surface = image_future.get();
-      if (surface)
-      {
-        font_texture_array.LoadLayerSurface(layer, surface);
-        SDL_free(surface);
-      }
-      else
-      {
-        std::cout << "[Err] image future for layer " << layer << " return nullptr   ("
-                  << SDL_GetError() << ")" << std::endl;
-      }
-
-      font_iterator++;
-      image_future_queue.erase(it);
-      break;
-    }
-  }
+  font_iterator = image_queue.size();
 
 #else
   font_texture_array.LoadLayer(font_iterator, font_path + image_queue.at(font_iterator));

@@ -20,7 +20,7 @@ Renderer::Renderer()
 , green{0.2f, 1.0f, 0.2f, 1.0f}
 , red{0.9f, 0.1f, 0.2f, 1.0f}
 , tan{0.8f, 0.6f, 0.2f, 1.0f}
-, fonts("../data/fonts/")
+, fonts("../data/fonts/", task_manager)
 
 , sprite_texture_array(512, 512, 5)
 {
@@ -492,11 +492,18 @@ void Renderer::RenderAll(const Game &game)
   if (game.debug.flag1) return RenderProgressBar(0.2f);
   if (game.debug.flag2) return RenderProgressBar(1.0f);
 
-  if (not fonts.Loaded())
+  if ((not fonts.Loaded()) or (not task_manager.Done()))
   {
-    float f = fonts.LoadSome();
+    std::cout << "Fonts Loaded: " << fonts.Loaded() << "   tasks done: " << task_manager.Done() << std::endl;
+    float f1 = fonts.LoadSome(8);
+    float f2 = task_manager.ProcessSome(8);
 
-    return RenderProgressBar(f);
+    float f = f1 + f2 / 2.0f;
+    assert(f >= 0.0f and f <= 2.0f);
+
+    RenderProgressBar(f);
+
+    return;
   }
   else
   {

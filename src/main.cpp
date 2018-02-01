@@ -13,6 +13,10 @@ constexpr int GL_MINOR{3};
 constexpr int WIDTH = 1280;
 constexpr int HEIGHT = 768;
 
+constexpr bool RUN_TESTS = false;
+constexpr bool TEST_UTF8 = false;
+constexpr bool TEST_TASKS = true;
+
 
 #include <SDL.h>
 #undef main
@@ -208,11 +212,6 @@ void main_game()
   std::cout << "Game exited normally" << std::endl;
 }
 
-
-constexpr bool RUN_TESTS = true;
-
-constexpr bool TEST_UTF8 = false;
-constexpr bool TEST_TASKS = true;
 
 void test_utf8();
 void test_tasks();

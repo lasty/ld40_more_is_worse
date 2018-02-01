@@ -8,6 +8,7 @@
 #include "shader_line.hpp"
 #include "shader_textured.hpp"
 #include "sprites.hpp"
+#include "tasks.hpp"
 #include "text.hpp"
 #include "texture.hpp"
 
@@ -41,12 +42,13 @@ private:
   col4 red;
   col4 tan;
 
+  TaskManager task_manager;
   FontLibrary fonts;
 
-  const Font * font_infocard_title = nullptr;
-  const Font * font_infocard_body = nullptr;
-  const Font * font_small = nullptr;
-  const Font * font_big = nullptr;
+  const Font *font_infocard_title = nullptr;
+  const Font *font_infocard_body = nullptr;
+  const Font *font_small = nullptr;
+  const Font *font_big = nullptr;
 
   ArrayTexture sprite_texture_array;
 

@@ -12,7 +12,7 @@ ImageLoadTask::ImageLoadTask(std::string filename, ArrayTexture& texture, int la
 , texture(texture)
 , layer(layer)
 {
-  future_surface = std::async(std::launch::async, IMG_Load, filename.c_str());
+  future_surface = std::async(std::launch::async, LoadImage, filename);
 }
 
 
@@ -20,6 +20,13 @@ bool ImageLoadTask::Done() const
 {
   auto status = future_surface.wait_for(std::chrono::seconds(0));
   return status == std::future_status::ready;
+}
+
+
+SDL_Surface* ImageLoadTask::LoadImage(std::string filename)
+{
+  auto surf = IMG_Load(filename.c_str());
+  return surf;
 }
 
 
@@ -120,12 +127,21 @@ public:
       Test_IMG_Load, filename.c_str(), layer * 250);
   }
 
+  ~TestLoadTask()
+  {
+    std::cout << "  ~TestLoadTask()" << std::endl;
+
+    auto surface = future_surface.get();
+    delete surface;
+  }
+
+
 private:
   std::string filename;
   std::string& texture;
   unsigned layer;
 
-  std::future<char*> future_surface;
+  std::shared_future<char*> future_surface;
 
   bool Done() const
   {
@@ -139,12 +155,15 @@ private:
 
     auto surface = future_surface.get();
 
+    // auto surface2 = future_surface;
+
+
     assert(layer < texture.size());
     assert(surface);
 
     texture[layer] = *surface;
 
-    delete surface;
+    // delete surface;
   }
 };
 

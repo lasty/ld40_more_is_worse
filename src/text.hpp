@@ -5,6 +5,7 @@
 
 #include "maths_types.hpp"
 #include "shader_textured.hpp"
+#include "tasks.hpp"
 #include "texture.hpp"
 
 #include <codecvt>
@@ -74,10 +75,11 @@ public:
 class FontLibrary
 {
 public:
-  FontLibrary(const std::string &font_path);
+  FontLibrary(const std::string &font_path, class TaskManager &task_manager);
 
 private:
   std::string font_path;
+  TaskManager &task_manager;
 
   std::vector<std::string> font_list;
   std::map<std::string, Font> fonts;
@@ -85,18 +87,7 @@ private:
   std::vector<std::string> image_queue;
   unsigned int font_iterator = 0;
 
-#if (LOAD_WITH_THREADS)
-  struct image_future
-  {
-    unsigned layer;
-    std::future<SDL_Surface *> surf_future;
-  };
-
-  std::list<image_future> image_future_queue;
-#endif
-
   ArrayTexture font_texture_array;
-
 
   unsigned long loading_timer = 0;
 

@@ -20,6 +20,8 @@ class ImageLoadTask : public Task
 {
 public:
   ImageLoadTask(std::string filename, ArrayTexture& texture, int layer);
+  ImageLoadTask(const ImageLoadTask& copy) = delete;
+  ImageLoadTask(ImageLoadTask&& move) = delete;
 
 private:
   std::string filename;
@@ -30,6 +32,8 @@ private:
 
 public:
   bool Done() const;
+
+  static SDL_Surface* LoadImage(std::string filename);
 
   void GLSetup();
 };
@@ -50,6 +54,7 @@ public:
 
   bool Done() const;
   float Progress() const;
+  //   unsigned GetSize() const { return task_list.size(); }
 
   float ProcessSome(unsigned ms_wait);
 };
